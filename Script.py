@@ -115,7 +115,7 @@ Some URLs is Shortner
 • IMDb should have admin privillage.
 • These commands works on both pm and group.
 • These commands can be used by any group member."""    
-   TGRAPH_TXT = """Help: <b>TELEGRAPH & PASTE</b>
+    TGRAPH_TXT = """Help: <b>TELEGRAPH & PASTE</b>
 
 <b>NOTE:</b>
 • IMDb should have admin privillage
