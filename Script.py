@@ -2,7 +2,7 @@ class script(object):
     START_TXT = """𝙷𝙴𝙻𝙾 {},
 𝙼𝚈 𝙽𝙰𝙼𝙴 𝙸𝚂 <a href=https://t.me/{}>{}</a>, 𝙸 𝙲𝙰𝙽 𝙿𝚁𝙾𝚅𝙸𝙳𝙴 𝙼𝙾𝚅𝙸𝙴𝚂, 𝙹𝚄𝚂𝚃 𝙰𝙳𝙳 𝙼𝙴 𝚃𝙾 𝚈𝙾𝚄𝚁 𝙶𝚁𝙾𝚄𝙿 𝙰𝙽𝙳 𝙴𝙽𝙹𝙾𝚈 😍,
 © 𝙴𝚛𝚎𝚗 𝚈𝚎𝚊𝚐𝚎𝚛 💖
-© <a href =https://t.me/shibili_offline>𝕷𝖔𝖗𝖉 𝖔𝖋 𝕯𝖆𝖗𝖐𝖓𝖊𝖘𝖘</a>
+© <a href =https://t.me/shibilii_offline>𝕷𝖔𝖗𝖉 𝖔𝖋 𝕯𝖆𝖗𝖐𝖓𝖊𝖘𝖘</a>
 Beta Coming Soon..."""
     HELP_TXT = """𝙷𝙴𝚈 {}
 𝙷𝙴𝚁𝙴 𝙸𝚂 𝚃𝙷𝙴 𝙷𝙴𝙻𝙿 𝙵𝙾𝚁 𝙼𝚈 𝙲𝙾𝙼𝙼𝙰𝙽𝙳𝚂."""
@@ -10,26 +10,26 @@ Beta Coming Soon..."""
 𝙷𝙴𝚁𝙴 𝙸𝚂 𝚃𝙷𝙴 𝙷𝙴𝙻𝙿 𝙵𝙾𝚁 𝙼𝚈 𝙲𝙾𝙼𝙼𝙰𝙽𝙳𝚂."""
     ABOUT_TXT = """✯ 𝙼𝚈 𝙽𝙰𝙼𝙴: {}
 ⫷⫸⫷⫸⫷⫸⫷⫸⫷⫸⫷⫸⫷⫸⫷⫸⫷⫸
-✯ 『𝙲𝚁𝙴𝙰𝚃𝙾𝚁』   : <a href=https://t.me/mwpro11>𝕷𝖔𝖗𝖉 𝖔𝖋 𝕯𝖆𝖗𝖐𝖓𝖊𝖘𝖘</a>
-╠
+✯ 『𝙲𝚁𝙴𝙰𝚃𝙾𝚁』   : <a href=https://t.me/shibilii_offline>𝕷𝖔𝖗𝖉 𝖔𝖋 𝕯𝖆𝖗𝖐𝖓𝖊𝖘𝖘</a>
+
 ✯ 『𝙻𝙸𝙱𝚁𝙰𝚁𝚈』   : <a href=https://docs.pyrogram.org/>𝙿𝚈𝚁𝙾𝙶𝚁𝙰𝙼</a>
-╠
+
 ✯ 『𝙻𝙰𝙽𝙶𝚄𝙰𝙶𝙴』  : <a href=https://www.python.org/>𝙿𝚈𝚃𝙷𝙾𝙽 𝟹</a>
-╠
+
 ✯ 『𝙳𝙰𝚃𝙰 𝙱𝙰𝚂𝙴』 : <a href=https://www.mongodb.com/>𝙼𝙾𝙽𝙶𝙾 𝙳𝙱</a>
-╠
+
 ✯ 『𝙱𝙾𝚃 𝚂𝙴𝚁𝚅𝙴𝚁』: <a href=https://id.heroku.com/login>𝙷𝙴𝚁𝙾𝙺𝚄</a>
-╠
-✯ 『𝙲𝙾𝙳𝙴𝙳 𝙱𝚈』  : <a href=https://t.me/shibili_offline>𝙻𝙾𝚁𝙳 𝚂𝙰</a>
-╠
-✯ 『𝚅𝙴𝚁𝚂𝙸𝙾𝙽』   : v5.1.2 
+
+✯ 『𝙲𝙾𝙳𝙴𝙳 𝙱𝚈』  : <a href=https://github.com/LordSA>𝙻𝙾𝚁𝙳 𝚂𝙰</a>
+
+✯ 『𝚅𝙴𝚁𝚂𝙸𝙾𝙽』   : v5.2.0[beta testing]
 ⫷⫸⫷⫸⫷⫸⫷⫸⫷⫸⫷⫸⫷⫸⫷⫸⫷⫸"""    
     SOURCE_TXT = """<b>『𝙽𝙾𝚃𝙴』:</b>
 ✯ 『𝚃𝙰𝙻𝙺』  - 𝙴𝚁𝙴𝙽 𝚈𝙴𝙰𝙶𝙴𝚁💔 𝙸𝚂 𝙰 𝙿𝚁𝙸𝚅𝙰𝚃𝙴 𝙱𝙾𝚃 𝚈𝙾𝚄 𝙲𝙰𝙽 𝚄𝚂𝙴 𝙼𝙴 𝙱𝚄𝚃 𝙼𝚈 𝚂𝙾𝚄𝚁𝙲𝙴 𝙸𝚂 𝙽𝙾𝚃 𝙰𝚅𝙰𝙸𝙻𝙰𝙱𝙻𝙴
-✯ 『𝚂𝙾𝚄𝚁𝙲𝙴』- <a href=https://t.me/mwmoviespro>𝙴𝚁𝙴𝙽 𝚈𝙴𝙰𝙶𝙴𝚁💔</a>  
+✯ 『𝚂𝙾𝚄𝚁𝙲𝙴』- <a href=https://github.com/LordSA/Eren-Yeager-ADV5.2.0>𝙴𝚁𝙴𝙽 𝚈𝙴𝙰𝙶𝙴𝚁💔</a>  
 
 <b>𝔇𝔢𝔳𝔢𝔩𝔬𝔭𝔢𝔯:</b>
-- <a href=https://t.me/shibili_offline>𝕷𝖔𝖗𝖉 𝖔𝖋 𝕯𝖆𝖗𝖐𝖓𝖊𝖘𝖘</a>"""    
+- <a href=https://t.me/shibilii_offline>𝕷𝖔𝖗𝖉 𝖔𝖋 𝕯𝖆𝖗𝖐𝖓𝖊𝖘𝖘</a>"""    
     WHOIS_TXT ="""<b>ᴡʜᴏɪs ᴍᴏᴅᴜʟᴇ</b>
 ɴᴏᴛᴇ:- ɢɪᴠᴇ ᴀ ᴜsᴇʀ ᴅᴇᴛᴀɪʟs
 •/whois : ɢɪᴠᴇ ᴀ ᴜsᴇʀ 𝔉ᴜʟʟ ᴅᴇᴛᴀɪʟs"""   
@@ -115,7 +115,7 @@ Some URLs is Shortner
 • IMDb should have admin privillage.
 • These commands works on both pm and group.
 • These commands can be used by any group member."""    
-    TGRAPH_TXT = """Help: <b>TELEGRAPH & PASTE</b>
+   TGRAPH_TXT = """Help: <b>TELEGRAPH & PASTE</b>
 
 <b>NOTE:</b>
 • IMDb should have admin privillage
