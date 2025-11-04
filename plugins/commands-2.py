@@ -261,44 +261,58 @@ def instatus(client, message):
 
 #Telegraph
 
+try:
+    from telegraph import upload_file
+except ImportError:
+    print("Error: 'telegraph' library not found.")
+    print("Please install it by running: pip install telegraph")
+    exit()
+
+os.makedirs("downloads", exist_ok=True)
+MAX_FILE_SIZE = 5242880  # 5MB
+
+
 @Client.on_message(filters.command(["tgmedia", "tgraph", "telegraph"]))
 async def telegraph_handler(client, message: Message):
     replied = message.reply_to_message
     if not replied:
         return await message.reply("Reply to a supported media file")
 
-    # Check supported files & size
+    status_msg = await message.reply("Processing, please wait...")
+
     if not (
-        (replied.photo and replied.photo.file_size <= 5242880)
-        or (replied.animation and replied.animation.file_size <= 5242880)
+        (replied.photo and replied.photo.file_size <= MAX_FILE_SIZE)
+        or (replied.animation and replied.animation.file_size <= MAX_FILE_SIZE)
         or (
             replied.video
             and replied.video.file_name
             and replied.video.file_name.endswith(".mp4")
-            and replied.video.file_size <= 5242880
+            and replied.video.file_size <= MAX_FILE_SIZE
         )
         or (
             replied.document
             and replied.document.file_name
             and replied.document.file_name.endswith((".jpg", ".jpeg", ".png", ".gif", ".mp4"))
-            and replied.document.file_size <= 5242880
+            and replied.document.file_size <= MAX_FILE_SIZE
         )
     ):
-        return await message.reply("Not supported or file too large (max 5MB)!")
+        return await status_msg.edit_text("Not supported or file too large (max 5MB)!")
 
-    download_location = await client.download_media(replied, file_name="downloads/")
-
+    download_location = None
     try:
-        if not os.path.exists(download_location):
-            return await message.reply("❌ File download failed.")
+        await status_msg.edit_text("Downloading file...")
+        download_location = await client.download_media(replied, file_name="downloads/")
 
+        if download_location is None or not os.path.exists(download_location):
+            return await status_msg.edit_text("❌ File download failed.")
+
+        await status_msg.edit_text("Uploading to Telegraph...")
         try:
             response = upload_file(download_location)
         except Exception as e:
             traceback.print_exc()
-            return await message.reply(f"Upload error: {e}")
+            return await status_msg.edit_text(f"Upload error: {e}")
 
-        # Normalize response
         link = None
         if isinstance(response, (list, tuple)) and len(response) > 0:
             link = f"https://telegra.ph{response[0]}"
@@ -307,7 +321,9 @@ async def telegraph_handler(client, message: Message):
         elif isinstance(response, dict) and "src" in response:
             link = f"https://telegra.ph{response['src']}"
         else:
-            return await message.reply("❌ Unexpected response from Telegraph API.")
+            return await status_msg.edit_text("❌ Unexpected response from Telegraph API.")
+
+        await status_msg.delete()
 
         await message.reply(
             f"<b>Link:</b>\n\n<code>{link}</code>",
@@ -315,9 +331,9 @@ async def telegraph_handler(client, message: Message):
             reply_markup=InlineKeyboardMarkup(
                 [
                     [
-                        InlineKeyboardButton("『𝕺𝙿𝙴𝙽 𝕷𝙸𝙽𝙺』", url=link),
+                        InlineKeyboardButton("『𝕺𝙿𝙴𝙽 𝕷𝙸𝙽𙺈』", url=link),
                         InlineKeyboardButton(
-                            "『𝕾𝙷𝙰𝚁𝙴 𝕷𝙸𝙽𝙺』",
+                            "『𝕾𝙷𝙰𝚁𝙴 𝕷𝙸𝙽𙺈』",
                             url=f"https://telegram.me/share/url?url={link}",
                         ),
                     ],
@@ -327,7 +343,7 @@ async def telegraph_handler(client, message: Message):
         )
 
     finally:
-        if os.path.exists(download_location):
+        if download_location and os.path.exists(download_location):
             os.remove(download_location)
 
 
