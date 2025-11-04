@@ -261,13 +261,13 @@ def instatus(client, message):
 
 #Telegraph
 
-try:
+'''try:
     from telegraph import upload_file
 except ImportError:
     print("Error: 'telegraph' library not found.")
     print("Please install it by running: pip install telegraph")
     exit()
-
+'''
 os.makedirs("downloads", exist_ok=True)
 MAX_FILE_SIZE = 5242880  # 5MB
 
