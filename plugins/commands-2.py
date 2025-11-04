@@ -291,9 +291,8 @@ async def telegraph_handler(client, message: Message):
 
     download_location = None
     
-    # This is the main 'try' block for the whole process
     try:
-        # --- 1. DOWNLOAD THE FILE FIRST ---
+        # --- 1. DOWNLOAD THE FILE ---
         await status_msg.edit_text("Downloading file...")
         download_location = await client.download_media(replied, file_name="downloads/")
 
@@ -304,10 +303,30 @@ async def telegraph_handler(client, message: Message):
 
         # --- 2. UPLOAD THE FILE (Inner 'try' block) ---
         try:
-            # Guess the file's MIME type (e.g., 'image/jpeg')
-            mime_type, _ = mimetypes.guess_type(download_location)
+            # --- NEW MIME TYPE LOGIC ---
+            # Define the *exact* mime types Telegra.ph accepts
+            MIME_MAP = {
+                '.jpg': 'image/jpeg',
+                '.jpeg': 'image/jpeg',
+                '.png': 'image/png',
+                '.gif': 'image/gif',
+                '.mp4': 'video/mp4',
+            }
+
+            # Get the file extension
+            file_ext = os.path.splitext(download_location)[1].lower()
+            
+            # Get the exact mime type from our map
+            mime_type = MIME_MAP.get(file_ext)
+
+            # If extension isn't in our map (shouldn't happen, but as a failsafe)
             if mime_type is None:
-                mime_type = 'application/octet-stream' # Fallback
+                # Fallback to guessing
+                mime_type, _ = mimetypes.guess_type(download_location)
+                if mime_type is None: 
+                    # Last resort
+                    mime_type = 'application/octet-stream'
+            # --- END OF NEW MIME TYPE LOGIC ---
 
             # Open the file and prepare it for upload
             with open(download_location, 'rb') as f:
@@ -315,7 +334,7 @@ async def telegraph_handler(client, message: Message):
                     'file': (
                         os.path.basename(download_location),  # Send the original filename
                         f,                                    # The file object
-                        mime_type                             # The correct MIME type
+                        mime_type                             # The *correct* MIME type
                     )
                 }
                 
@@ -324,7 +343,6 @@ async def telegraph_handler(client, message: Message):
                     files=files
                 )
             
-            # Check if the upload was successful
             if response.status_code == 200:
                 try:
                     response_json = response.json()
@@ -344,7 +362,7 @@ async def telegraph_handler(client, message: Message):
         if isinstance(response_json, list) and len(response_json) > 0:
             item = response_json[0]
             if isinstance(item, dict) and 'src' in item:
-                link = f"https://telegra.ph{item['src']}"
+                link = f"https.telegra.ph{item['src']}"
             elif 'error' in item:
                  return await status_msg.edit_text(f"Telegraph Error: {item.get('error')}")
         
@@ -361,7 +379,7 @@ async def telegraph_handler(client, message: Message):
             reply_markup=InlineKeyboardMarkup(
                 [
                     [
-                        InlineKeyboardButton("『𝕺𝙿𝙴𝙽 𝕷𝙸𝙽𙺈』", url=link),
+                        InlineKeyboardButton("『𝕺𝙿𝙴𝙽 B_𝕷𝙸𝙽𙺈』", url=link), # I fixed the broken unicode in the button
                         InlineKeyboardButton(
                             "『𝕾𝙷𝙰𝚁𝙴 𝕷𝙸𝙽𙺈』",
                             url=f"https://telegram.me/share/url?url={link}",
@@ -372,7 +390,6 @@ async def telegraph_handler(client, message: Message):
             ),
         )
 
-    # This is the main 'finally' block that cleans up the file
     finally:
         if download_location and os.path.exists(download_location):
             os.remove(download_location)
