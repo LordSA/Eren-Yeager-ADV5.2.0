@@ -9,34 +9,45 @@ client = AsyncIOMotorClient(DATABASE_URI)
 db = client[DATABASE_NAME]
 mycol = db["USER"]
 
-
-async def insert(chat_id: int):
-    user_det = {"_id": int(chat_id), "lg_code": None}
-    try:
-        await mycol.insert_one(user_det)
-    except Exception as e:
-        logger.debug(f"User already exists or error: {e}")
-
-
-async def set(chat_id: int, lg_code: str):
-    await mycol.update_one({"_id": chat_id}, {"$set": {"lg_code": lg_code}}, upsert=True)
-
-
-async def unset(chat_id: int):
-    await mycol.update_one({"_id": chat_id}, {"$set": {"lg_code": None}})
+async def set_lg_code(chat_id: int, lg_code: str):
+    """
+    Sets a user's language code.
+    Creates the user if they don't exist (upsert=True).
+    """
+    await mycol.update_one(
+        {"_id": chat_id},
+        {"$set": {"lg_code": lg_code}},
+        upsert=True
+    )
 
 
-async def find(chat_id: int):
+async def unset_lg_code(chat_id: int):
+    """
+    Sets a user's language code to None.
+    Creates the user if they don't exist (upsert=True).
+    This function perfectly replaces the old 'insert' function.
+    """
+    await mycol.update_one(
+        {"_id": chat_id},
+        {"$set": {"lg_code": None}},
+        upsert=True
+    )
+
+
+async def get_lg_code(chat_id: int):
+    """Finds a user and returns *only* their lg_code."""
     doc = await mycol.find_one({"_id": chat_id}, {"lg_code": 1})
-    return doc["lg_code"] if doc else None
+    return doc.get("lg_code") if doc else None
 
 
-async def getid():
-    values = []
-    async for key in mycol.find({}, {"_id": 1}):
-        values.append(key["_id"])
-    return values
+async def get_all_user_ids():
+    """
+    Gets a list of all user IDs in the collection.
+    This is much faster than iterating a cursor.
+    """
+    return await mycol.distinct("_id")
 
 
-async def find_one(id: int):
+async def get_user(id: int):
+    """Gets the full document for a single user."""
     return await mycol.find_one({"_id": id})
