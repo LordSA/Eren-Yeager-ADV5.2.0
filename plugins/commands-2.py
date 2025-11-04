@@ -17,7 +17,7 @@ from plugins.Tools.help_func.last_online import last_online
 from pyrogram import Client, filters
 from urllib.parse import quote
 from info import SUPPORT_CHAT
-from telegraph import upload_file
+#from telegraph import upload_file
 from pyrogram.errors import ChatAdminRequired, FloodWait
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 from database.ia_filterdb import Media, get_file_details, unpack_new_file_id
@@ -261,17 +261,6 @@ def instatus(client, message):
 
 #Telegraph
 
-'''try:
-    from telegraph import upload_file
-except ImportError:
-    print("Error: 'telegraph' library not found.")
-    print("Please install it by running: pip install telegraph")
-    exit()
-'''
-os.makedirs("downloads", exist_ok=True)
-MAX_FILE_SIZE = 5242880  # 5MB
-
-
 @Client.on_message(filters.command(["tgmedia", "tgraph", "telegraph"]))
 async def telegraph_handler(client, message: Message):
     replied = message.reply_to_message
@@ -280,20 +269,21 @@ async def telegraph_handler(client, message: Message):
 
     status_msg = await message.reply("Processing, please wait...")
 
+    # Check supported files & size (using the 5MB limit)
     if not (
-        (replied.photo and replied.photo.file_size <= MAX_FILE_SIZE)
-        or (replied.animation and replied.animation.file_size <= MAX_FILE_SIZE)
+        (replied.photo and replied.photo.file_size <= 5242880)
+        or (replied.animation and replied.animation.file_size <= 5242880)
         or (
             replied.video
             and replied.video.file_name
             and replied.video.file_name.endswith(".mp4")
-            and replied.video.file_size <= MAX_FILE_SIZE
+            and replied.video.file_size <= 5242880
         )
         or (
             replied.document
             and replied.document.file_name
             and replied.document.file_name.endswith((".jpg", ".jpeg", ".png", ".gif", ".mp4"))
-            and replied.document.file_size <= MAX_FILE_SIZE
+            and replied.document.file_size <= 5242880
         )
     ):
         return await status_msg.edit_text("Not supported or file too large (max 5MB)!")
@@ -307,24 +297,49 @@ async def telegraph_handler(client, message: Message):
             return await status_msg.edit_text("❌ File download failed.")
 
         await status_msg.edit_text("Uploading to Telegraph...")
+        
+        # --- NEW UPLOAD BLOCK (replaces upload_file()) ---
         try:
-            response = upload_file(download_location)
+            with open(download_location, 'rb') as f:
+                response = requests.post(
+                    'https://telegra.ph/upload',
+                    files={'file': ('file', f, 'application/octet-stream')}
+                )
+            
+            # Check if the upload was successful and returned JSON
+            if response.status_code == 200:
+                try:
+                    response_json = response.json()
+                except requests.exceptions.JSONDecodeError:
+                    # This is the error we were getting: server sent text, not JSON
+                    return await status_msg.edit_text(f"Upload Error: Telegraph returned an invalid response (not JSON).")
+            else:
+                return await status_msg.edit_text(f"Upload Error: Telegraph server returned status code {response.status_code}.")
+
         except Exception as e:
             traceback.print_exc()
             return await status_msg.edit_text(f"Upload error: {e}")
+        # --- END OF NEW BLOCK ---
 
+
+        # --- NEW RESPONSE HANDLING ---
         link = None
-        if isinstance(response, (list, tuple)) and len(response) > 0:
-            link = f"https://telegra.ph{response[0]}"
-        elif isinstance(response, str):
-            link = f"https://telegra.ph{response}"
-        elif isinstance(response, dict) and "src" in response:
-            link = f"https://telegra.ph{response['src']}"
-        else:
-            return await status_msg.edit_text("❌ Unexpected response from Telegraph API.")
+        # The successful response is a list containing a dictionary
+        if isinstance(response_json, list) and len(response_json) > 0:
+            item = response_json[0]
+            if isinstance(item, dict) and 'src' in item:
+                link = f"https://telegra.ph{item['src']}"
+            elif 'error' in item:
+                 return await status_msg.edit_text(f"Telegraph Error: {item.get('error')}")
+        
+        if link is None:
+            # If the response was not what we expected
+            return await status_msg.edit_text(f"❌ Unexpected response from Telegraph API: {response_json}")
+        # --- END OF NEW RESPONSE HANDLING ---
 
         await status_msg.delete()
 
+        # Using the same button layout as your original code
         await message.reply(
             f"<b>Link:</b>\n\n<code>{link}</code>",
             quote=True,
@@ -343,9 +358,9 @@ async def telegraph_handler(client, message: Message):
         )
 
     finally:
+        # Ensure the file is always cleaned up
         if download_location and os.path.exists(download_location):
             os.remove(download_location)
-
 
 
 @Client.on_message(filters.command('whois') & f_onw_fliter)
