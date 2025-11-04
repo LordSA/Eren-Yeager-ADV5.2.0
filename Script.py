@@ -190,34 +190,7 @@ Translate texts to a specific language!
 <b>NOTE:</b>
 • IMDb should have admin privillage.
 • These commands works on both pm and group.
-• IMDb can translate texts to 200+ languages."""    
-    COVID_TXT = """➤ 𝐇𝐞𝐥𝐩: 𝖢𝗈𝗏𝗂𝖽
-𝚃𝚑𝚒𝚜 𝙲𝚘𝚖𝚖𝚊𝚗𝚍 𝚑𝚎𝚕𝚙𝚜 𝚢𝚘𝚞 𝚝𝚘 𝚔𝚗𝚘𝚠 𝚍𝚊ily 𝚒𝚗𝚏𝚘𝚛𝚖𝚊𝚝𝚒𝚘𝚗 𝚊𝚋𝚘𝚞𝚝 𝚌𝚘𝚟𝚒𝚍
-
-➤ 𝐂𝐨𝐦𝐦𝐚𝐧𝐝𝐬 𝐚𝐧𝐝 𝐔𝐬𝐚𝐠𝐞:
-
-➪ /covid - 𝗎𝗌𝖾 𝗍𝗁𝗂𝗌 𝖼𝗈𝗆𝗆𝖺𝗇𝖽 𝗐𝗂𝗍𝗁 𝗒𝗈𝗎𝗋 𝖼𝗈𝗎𝗇𝗍𝗋𝗒 𝗇𝖺𝗆𝖾 𝗍𝗈 𝗀𝖾𝗍 𝖼𝗈𝗏𝗂𝖽𝖾 𝗂𝗇𝖿𝗈𝗋𝗆𝖺𝗍𝗂𝗈𝗇
-
-➛𝖤𝗑𝖺𝗆𝗉𝗅𝖾:
-/covid 𝖨𝗇𝖽𝗂𝖺"""    
-    COUNTRY_TXT = """
-    
-Use /country (Country name)
-- Get info about Country 
-"""
-    CARBON_TXT = """
-    
-Use /carbon (Country name)
-ʀᴇᴘʟʏ ᴛᴏ ᴀ ᴛᴇxᴛ ᴍᴇssᴀɢᴇ ᴛᴏ ᴍᴀᴋᴇ ᴄᴀʀʙᴏɴ
-"""
-    CALCULATOR_TXT = """HELP:
-    
- This is to Calculate numbers
- 
- Command:
- /calculate or /calc
- it will open calculator in bot
-"""
+• IMDb can translate texts to 200+ languages."""      
     IMAGE_TXT = """➤ 𝐇𝐞𝐥𝐩: Photo
     
 𝚃𝚑𝚒𝚜 𝚌𝚘𝚖𝚖𝚊𝚗𝚍 𝚑𝚎𝚕𝚙𝚜 𝚢𝚘𝚞 𝚝𝚘 𝚎𝚍𝚒𝚝 𝚒𝚖𝚊𝚐𝚎 𝚟𝚎𝚛𝚢 𝚎𝚊𝚜𝚒𝚕𝚢
@@ -228,13 +201,7 @@ Select your required mode from below! \n 𝚃𝚘 𝚆𝚘𝚛𝚔 𝚃𝚑𝚒�
 ➤ 𝐂𝐨𝐦𝐦𝐚𝐧𝐝𝐬 𝐚𝐧𝐝 𝐔𝐬𝐚𝐠𝐞:
 
 ➪ 𝖩𝗎𝗌𝗍 𝗌𝖾𝗇𝖽 𝗆𝖾 𝖺 𝗂𝗆𝖺𝗀𝖾 𝗍𝗈 𝖾𝖽𝗂𝗍 ✨
-"""
-    ABOOK_TXT = """➤ 𝐇𝐞𝐥𝐩: 𝖠𝗎𝖽𝗂𝗈𝖻𝗈𝗈𝗄
-𝚈𝚘𝚞 𝚌𝚊𝚗 𝚌𝚘𝚗𝚟𝚎𝚛𝚝 𝚊 𝙿𝙳𝙵 𝚏𝚒𝚕𝚎 𝚝𝚘 𝚊 𝚊𝚞𝚍𝚒𝚘 𝚏𝚒𝚕𝚎 𝚠𝚒𝚝𝚑 𝚝𝚑𝚒𝚜 𝚌𝚘𝚖𝚖𝚊𝚗𝚍 ✯
-
-➤ 𝐂𝐨𝐦𝐦𝐚𝐧𝐝𝐬 𝐚𝐧𝐝 𝐔𝐬𝐚𝐠𝐞:
-
-➪ /audiobook: 𝖱𝖾𝗉𝗅𝗒 𝗍𝗁𝗂𝗌 𝖼𝗈𝗆𝗆𝖺𝗇𝖽 𝗍𝗈 𝖺𝗇𝗒 𝖯𝖣𝖥 𝗍𝗈 𝗀𝖾𝗇𝖾𝗋𝖺𝗍𝖾 𝗍𝗁𝖾 𝖺𝗎𝖽𝗂𝗈"""    
+"""   
     FILE_TXT = """➤ 𝐇𝐞𝐥𝐩: 𝖥𝗂𝗅𝖾 𝖲𝗍𝗈𝗋𝖾
  
 𝚆𝚒𝚝𝚑 𝚝𝚑𝚒𝚜 𝚌𝚘𝚖𝚖𝚊𝚍𝚜 𝚒 𝚌𝚊𝚗 𝚜𝚝𝚘𝚛𝚎 𝚏𝚒𝚕𝚎𝚜 𝚊𝚗𝚍 𝚐𝚒𝚟𝚎 𝚢𝚘𝚞 𝚊 𝚜𝚑𝚊𝚛𝚎𝚊𝚋𝚕𝚎 𝚕𝚒𝚗𝚔 𝚠𝚒𝚝𝚑 𝚝𝚑𝚒𝚜 𝚕𝚒𝚗𝚔 𝚒 𝚌𝚊𝚗 𝚜𝚑𝚊𝚛𝚎 𝚝𝚑𝚊𝚝 𝚏𝚒𝚕𝚎𝚜 𝚢𝚘𝚞 𝚐𝚒𝚟𝚎 𝚖𝚎 𝚏𝚛𝚘𝚖 𝚊𝚗𝚢 𝚌𝚑𝚊𝚗𝚗𝚎𝚕 𝚠𝚒𝚝𝚑𝚘𝚞𝚝 𝚊𝚍𝚍𝚒𝚗𝚐 𝚖𝚎
@@ -365,21 +332,6 @@ Music download modules, for those who love music.
 • IMDb should have admin privillage.
 • These commands works on both pm and group.
 • These commands can be used by any group member."""
-    PASSWORD_GEN_TXT = """Help: <b>Password Generator</b>
-
-There Is Nothing To Know More. Send Me The Limit Of Your Password.
-- I Will Give The Password Of That Limit.
-
-<b>Commands and Usage:</b>
-• /genpassword or /genpw <code>20</code>
-
-<b>NOTE:</b>
-• Only Digits Are Allowed
-• Maximum Allowed Digits Till 84 
-(I Can't Generate Passwords Above The Length 84)
-• IMDb should have admin privillage.
-• These commands works on both pm and group.
-• These commands can be used by any group member."""
     SHARE_TXT = """Help: <b>Sharing Text Maker</b>
 
 a bot to create a link to share text in the telegram.
@@ -392,7 +344,7 @@ a bot to create a link to share text in the telegram.
 • These commands works on both pm and group.
 • These commands can be used by any group member."""
 
-    TTS_HELP = """
+    TTS_TXT = """
 🎙️ **Text-to-Speech Bot Help**
 
 **Usage:**
