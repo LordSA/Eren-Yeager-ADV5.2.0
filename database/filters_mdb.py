@@ -117,4 +117,5 @@ class FilterDB:
         total_collections = len(await self.col.distinct("group_id"))
 
         return total_collections, total_count
+
 filters_db = FilterDB(DATABASE_URI, DATABASE_NAME)
