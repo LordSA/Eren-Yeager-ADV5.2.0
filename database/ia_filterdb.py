@@ -107,3 +107,5 @@ async def get_file_details(file_id):
     """Get full file details by file_id"""
     doc = await Media.find_one({'file_id': file_id})
     return doc
+
+filters_db = FilterDB(DATABASE_URI, DATABASE_NAME)
