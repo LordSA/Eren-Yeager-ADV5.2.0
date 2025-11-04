@@ -1,6 +1,7 @@
 # Made by Lord SA
 import os
 import logging
+import mimetypes
 import random
 import asyncio
 import aiohttp
@@ -289,21 +290,28 @@ async def telegraph_handler(client, message: Message):
         return await status_msg.edit_text("Not supported or file too large (max 5MB)!")
 
     download_location = None
-    try:
-        await status_msg.edit_text("Downloading file...")
-        download_location = await client.download_media(replied, file_name="downloads/")
-
-        if download_location is None or not os.path.exists(download_location):
-            return await status_msg.edit_text("❌ File download failed.")
-
-        await status_msg.edit_text("Uploading to Telegraph...")
-        
-        # --- NEW UPLOAD BLOCK (replaces upload_file()) ---
+    # --- NEW UPLOAD BLOCK (replaces upload_file()) ---
         try:
+            # 1. Guess the file's MIME type (e.g., 'image/jpeg')
+            mime_type, _ = mimetypes.guess_type(download_location)
+            if mime_type is None:
+                # Fallback if the type can't be guessed
+                mime_type = 'application/octet-stream'
+
+            # 2. Open the file and prepare it for upload
             with open(download_location, 'rb') as f:
+                files = {
+                    'file': (
+                        os.path.basename(download_location),  # Send the original filename
+                        f,                                    # The file object
+                        mime_type                             # The correct MIME type
+                    )
+                }
+                
+                # 3. Make the request
                 response = requests.post(
                     'https://telegra.ph/upload',
-                    files={'file': ('file', f, 'application/octet-stream')}
+                    files=files
                 )
             
             # Check if the upload was successful and returned JSON
@@ -311,10 +319,10 @@ async def telegraph_handler(client, message: Message):
                 try:
                     response_json = response.json()
                 except requests.exceptions.JSONDecodeError:
-                    # This is the error we were getting: server sent text, not JSON
                     return await status_msg.edit_text(f"Upload Error: Telegraph returned an invalid response (not JSON).")
             else:
-                return await status_msg.edit_text(f"Upload Error: Telegraph server returned status code {response.status_code}.")
+                # This will now clearly report the 400 error if it happens again
+                return await status_msg.edit_text(f"Upload Error: Telegraph server returned status code {response.status_code}. Response: {response.text}")
 
         except Exception as e:
             traceback.print_exc()
