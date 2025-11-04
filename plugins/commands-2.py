@@ -17,7 +17,7 @@ from plugins.Tools.help_func.last_online import last_online
 from pyrogram import Client, filters
 from urllib.parse import quote
 from info import SUPPORT_CHAT
-from telegraph import upload_file
+from telegraph.py import upload_file
 from pyrogram.errors import ChatAdminRequired, FloodWait
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 from database.ia_filterdb import Media, get_file_details, unpack_new_file_id
@@ -261,13 +261,13 @@ def instatus(client, message):
 
 #Telegraph
 
-try:
+'''try:
     from telegraph import upload_file
 except ImportError:
     print("Error: 'telegraph' library not found.")
     print("Please install it by running: pip install telegraph")
     exit()
-
+'''
 os.makedirs("downloads", exist_ok=True)
 MAX_FILE_SIZE = 5242880  # 5MB
 
