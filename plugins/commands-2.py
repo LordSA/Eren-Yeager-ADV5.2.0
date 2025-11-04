@@ -17,7 +17,7 @@ from plugins.Tools.help_func.last_online import last_online
 from pyrogram import Client, filters
 from urllib.parse import quote
 from info import SUPPORT_CHAT
-from telegraph.py import upload_file
+from telegraph import upload_file
 from pyrogram.errors import ChatAdminRequired, FloodWait
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 from database.ia_filterdb import Media, get_file_details, unpack_new_file_id
