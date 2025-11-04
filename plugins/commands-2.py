@@ -290,15 +290,26 @@ async def telegraph_handler(client, message: Message):
         return await status_msg.edit_text("Not supported or file too large (max 5MB)!")
 
     download_location = None
-    # --- NEW UPLOAD BLOCK (replaces upload_file()) ---
+    
+    # This is the main 'try' block for the whole process
+    try:
+        # --- 1. DOWNLOAD THE FILE FIRST ---
+        await status_msg.edit_text("Downloading file...")
+        download_location = await client.download_media(replied, file_name="downloads/")
+
+        if download_location is None or not os.path.exists(download_location):
+            return await status_msg.edit_text("❌ File download failed.")
+
+        await status_msg.edit_text("Uploading to Telegraph...")
+
+        # --- 2. UPLOAD THE FILE (Inner 'try' block) ---
         try:
-            # 1. Guess the file's MIME type (e.g., 'image/jpeg')
+            # Guess the file's MIME type (e.g., 'image/jpeg')
             mime_type, _ = mimetypes.guess_type(download_location)
             if mime_type is None:
-                # Fallback if the type can't be guessed
-                mime_type = 'application/octet-stream'
+                mime_type = 'application/octet-stream' # Fallback
 
-            # 2. Open the file and prepare it for upload
+            # Open the file and prepare it for upload
             with open(download_location, 'rb') as f:
                 files = {
                     'file': (
@@ -308,31 +319,28 @@ async def telegraph_handler(client, message: Message):
                     )
                 }
                 
-                # 3. Make the request
                 response = requests.post(
                     'https://telegra.ph/upload',
                     files=files
                 )
             
-            # Check if the upload was successful and returned JSON
+            # Check if the upload was successful
             if response.status_code == 200:
                 try:
                     response_json = response.json()
                 except requests.exceptions.JSONDecodeError:
                     return await status_msg.edit_text(f"Upload Error: Telegraph returned an invalid response (not JSON).")
             else:
-                # This will now clearly report the 400 error if it happens again
                 return await status_msg.edit_text(f"Upload Error: Telegraph server returned status code {response.status_code}. Response: {response.text}")
 
         except Exception as e:
             traceback.print_exc()
             return await status_msg.edit_text(f"Upload error: {e}")
-        # --- END OF NEW BLOCK ---
+        # --- END OF UPLOAD BLOCK ---
 
 
-        # --- NEW RESPONSE HANDLING ---
+        # --- 3. HANDLE THE RESPONSE ---
         link = None
-        # The successful response is a list containing a dictionary
         if isinstance(response_json, list) and len(response_json) > 0:
             item = response_json[0]
             if isinstance(item, dict) and 'src' in item:
@@ -341,13 +349,12 @@ async def telegraph_handler(client, message: Message):
                  return await status_msg.edit_text(f"Telegraph Error: {item.get('error')}")
         
         if link is None:
-            # If the response was not what we expected
             return await status_msg.edit_text(f"❌ Unexpected response from Telegraph API: {response_json}")
-        # --- END OF NEW RESPONSE HANDLING ---
+        # --- END OF RESPONSE HANDLING ---
 
         await status_msg.delete()
 
-        # Using the same button layout as your original code
+        # --- 4. SEND THE FINAL LINK ---
         await message.reply(
             f"<b>Link:</b>\n\n<code>{link}</code>",
             quote=True,
@@ -365,8 +372,8 @@ async def telegraph_handler(client, message: Message):
             ),
         )
 
+    # This is the main 'finally' block that cleans up the file
     finally:
-        # Ensure the file is always cleaned up
         if download_location and os.path.exists(download_location):
             os.remove(download_location)
 
