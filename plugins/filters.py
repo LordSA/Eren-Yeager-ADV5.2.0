@@ -4,7 +4,8 @@ from pyrogram import filters, Client, enums
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
 
 from plugins.Tools.help_func.decorators import check_group_admin
-from database.ia_filterdb import filters_db
+#from database.ia_filterdb import filters_db
+from database.filters_mdb import filters_db
 from database.connections_mdb import active_connection 
 
 from utils import get_file_id, parser, split_quotes
