@@ -81,7 +81,7 @@ async def delete_connection(user_id, group_id):
         )
         if update_result.modified_count == 0:
             return False
-        query = await mycol.find_one({"_id": user_id}, {"_id": 0}).
+        query = await mycol.find_one({"_id": user_id}, {"_id": 0})
         if query and query.get("active_group") != group_id:
             return True
         new_active_group = None
