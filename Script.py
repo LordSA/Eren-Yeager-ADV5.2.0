@@ -1,3 +1,4 @@
+from info import VERSION
 class script(object):
     START_TXT = """𝙷𝙴𝙻𝙾 {},
 𝙼𝚈 𝙽𝙰𝙼𝙴 𝙸𝚂 <a href=https://t.me/{}>{}</a>, 𝙸 𝙲𝙰𝙽 𝙿𝚁𝙾𝚅𝙸𝙳𝙴 𝙼𝙾𝚅𝙸𝙴𝚂, 𝙹𝚄𝚂𝚃 𝙰𝙳𝙳 𝙼𝙴 𝚃𝙾 𝚈𝙾𝚄𝚁 𝙶𝚁𝙾𝚄𝙿 𝙰𝙽𝙳 𝙴𝙽𝙹𝙾𝚈 😍,
@@ -22,7 +23,7 @@ Beta Coming Soon..."""
 
 ✯ 『𝙲𝙾𝙳𝙴𝙳 𝙱𝚈』  : <a href=https://github.com/LordSA>𝙻𝙾𝚁𝙳 𝚂𝙰</a>
 
-✯ 『𝚅𝙴𝚁𝚂𝙸𝙾𝙽』   : v5.2.0[beta testing]
+✯ 『𝚅𝙴𝚁𝚂𝙸𝙾𝙽』   : <code>{VERSION}</code>
 ⫷⫸⫷⫸⫷⫸⫷⫸⫷⫸⫷⫸⫷⫸⫷⫸⫷⫸"""    
     SOURCE_TXT = """<b>『𝙽𝙾𝚃𝙴』:</b>
 ✯ 『𝚃𝙰𝙻𝙺』  - 𝙴𝚁𝙴𝙽 𝚈𝙴𝙰𝙶𝙴𝚁💔 𝙸𝚂 𝙰 𝙿𝚁𝙸𝚅𝙰𝚃𝙴 𝙱𝙾𝚃 𝚈𝙾𝚄 𝙲𝙰𝙽 𝚄𝚂𝙴 𝙼𝙴 𝙱𝚄𝚃 𝙼𝚈 𝚂𝙾𝚄𝚁𝙲𝙴 𝙸𝚂 𝙽𝙾𝚃 𝙰𝚅𝙰𝙸𝙻𝙰𝙱𝙻𝙴
