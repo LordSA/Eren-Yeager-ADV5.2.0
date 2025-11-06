@@ -17,11 +17,7 @@ from pyrogram.errors import FloodWait, UserIsBlocked, MessageNotModified, PeerId
 from utils import get_size, is_subscribed, get_poster, search_gagala, temp, get_settings, save_group_settings
 from database.users_chats_db import db
 from database.ia_filterdb import Media, get_file_details, get_search_results
-from database.filters_mdb import (
-    del_all,
-    find_filter,
-    get_filters,
-)
+from database.filters_mdb import filters_db
 import logging
 
 logger = logging.getLogger(__name__)
@@ -187,7 +183,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
 
         st = await client.get_chat_member(grp_id, userid)
         if (st.status == enums.ChatMemberStatus.OWNER) or (str(userid) in ADMINS):
-            await del_all(query.message, grp_id, title)
+            await filters_db.del_all(query.message, grp_id, title)
         else:
             await query.answer("You need to be Group Owner or an Auth User to do that!", show_alert=True)
     elif query.data == "delallcancel":
@@ -336,7 +332,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
         grp_id = query.message.chat.id
         i = query.data.split(":")[1]
         keyword = query.data.split(":")[2]
-        reply_text, btn, alerts, fileid = await find_filter(grp_id, keyword)
+        reply_text, btn, alerts, fileid = await filters_db.find_filter(grp_id, keyword)
         if alerts is not None:
             alerts = ast.literal_eval(alerts)
             alert = alerts[int(i)]
@@ -718,7 +714,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
             text="◾◾◾"
         )
         await query.message.edit_text(
-            text=script.TIPS_TXT,
+            text=script.LOGO_TXT,
             disable_web_page_preview=True,
             reply_markup=reply_markup,
             parse_mode=enums.ParseMode.HTML
@@ -1297,11 +1293,11 @@ async def manual_filters(client, message, text=False):
     group_id = message.chat.id
     name = text or message.text
     reply_id = message.reply_to_message.id if message.reply_to_message else message.id
-    keywords = await get_filters(group_id)
+    keywords = await filters_db.get_filters(group_id)
     for keyword in reversed(sorted(keywords, key=len)):
         pattern = r"( |^|[^\w])" + re.escape(keyword) + r"( |$|[^\w])"
         if re.search(pattern, name, flags=re.IGNORECASE):
-            reply_text, btn, alert, fileid = await find_filter(group_id, keyword)
+            reply_text, btn, alert, fileid = await filters_db.find_filter(group_id, keyword)
 
             if reply_text:
                 reply_text = reply_text.replace("\\n", "\n").replace("\\t", "\t")
