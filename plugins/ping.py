@@ -11,7 +11,7 @@ from plugins.Tools.help_func.cust_p_filters import f_onw_fliter
 ALIVE = "എന്തിനാടാ start ഉണ്ടാകുമ്പോൾ എന്നെ നേക്കി എൻ്റെ വായിൽ ഉള്ളത് കേൾക്കുന്നത്... എന്നാ പരിപാടിയാ..." 
 HELP = "ദൈവമേ എന്നെ മാത്രം രക്ഷിക്കണേ...."
 REPO = "നമ്മൾ നമ്മൾ പോലുമറിയാതെ അധോലോകം ആയി മാറിക്കഴിഞ്ഞിരിക്കുന്നു ഷാജിയേട്ടാ..."
-REPO_URL = "https://github.com/LordSA/Eren-Yeager_ADV5.2.0"
+REPO_URL = "https://github.com/LordSA/Eren-Yeager-ADV5.2.0"
 # -- Constants End -- #
 
 
