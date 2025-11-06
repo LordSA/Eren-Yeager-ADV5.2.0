@@ -39,7 +39,10 @@ async def handle_new_chat(bot, message):
     if is_me_added:
         chat_id = message.chat.id
         if not await db.get_chat(chat_id):
-            total_members = await bot.get_chat_members_count(chat_id)
+            try:
+                total_members = await bot.get_chat_members_count(chat_id)
+            except Exception:
+                total_members = "unknown"
             added_by = message.from_user.mention if message.from_user else "Anonymous"
             await bot.send_message(
                 LOG_CHANNEL,
@@ -234,7 +237,7 @@ async def list_users(bot, message):
     msg = await message.reply("Getting list of users...")
     users = await db.get_all_users()
     text = "Users Saved In DB:\n\n"
-    async for user in users:
+    for user in users:
         text += f"<a href=tg://user?id={user['id']}>{user['name']}</a>"
         if user.get("ban_status", {}).get("is_banned"):
             text += " (Banned)"
@@ -246,7 +249,7 @@ async def list_chats(bot, message):
     msg = await message.reply("Getting list of chats...")
     chats = await db.get_all_chats()
     text = "Chats Saved In DB:\n\n"
-    async for chat in chats:
+    for chat in chats:
         text += f"**Title:** `{chat['title']}`\n**ID:** `{chat['id']}`"
         if chat.get("chat_status", {}).get("is_disabled"):
             text += " (Disabled)"
