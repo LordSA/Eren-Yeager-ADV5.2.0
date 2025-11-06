@@ -4,6 +4,7 @@ Syntax: .ping"""
 import time
 import random
 from pyrogram import Client, filters
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from plugins.Tools.help_func.cust_p_filters import f_onw_fliter
 
 # -- Constants -- #
