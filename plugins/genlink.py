@@ -2,7 +2,7 @@ import re
 from pyrogram import filters, Client, enums
 from pyrogram.errors.exceptions.bad_request_400 import ChannelInvalid, UsernameInvalid, UsernameNotModified
 from info import ADMINS, LOG_CHANNEL, FILE_STORE_CHANNEL, PUBLIC_FILE_STORE
-from database.ia_filterdb import unpack_new_file_id
+import database.ia_filterdb
 from utils import temp
 import re
 import os
@@ -30,7 +30,7 @@ async def gen_link_s(bot, message):
         return await message.reply("Reply to a supported media")
     if message.has_protected_content and message.chat.id not in ADMINS:
         return await message.reply("okDa")
-    file_id, ref = unpack_new_file_id((getattr(replied, file_type.value)).file_id)
+    file_id = (getattr(replied, file_type.value)).file_id
     string = 'filep_' if message.text.lower().strip() == "/plink" else 'file_'
     string += file_id
     outstr = base64.urlsafe_b64encode(string.encode("ascii")).decode().strip("=")
@@ -121,5 +121,5 @@ async def gen_link_batch(bot, message):
         json.dump(outlist, out)
     post = await bot.send_document(LOG_CHANNEL, f"batchmode_{message.from_user.id}.json", file_name="Batch.json", caption="⚠️𝙶𝚎𝚗𝚎𝚛𝚊𝚝𝚎𝚍 𝚏𝚘𝚛 𝚏𝚒𝚕𝚎𝚜𝚝𝚘𝚛𝚎.")
     os.remove(f"batchmode_{message.from_user.id}.json")
-    file_id, ref = unpack_new_file_id(post.document.file_id)
+    file_id = post.document.file_id
     await sts.edit(f"Here is your link\nContains `{og_msg}` files.\n https://t.me/{temp.U_NAME}?start=BATCH-{file_id}")
