@@ -174,8 +174,14 @@ async def start(client, message):
         except:
             f_msg_id, l_msg_id, f_chat_id = decoded.split("_", 2)
             protect = "/pbatch" if PROTECT_CONTENT else "batch"
-        diff = int(l_msg_id) - int(f_msg_id)
-        async for msg in client.iter_messages(int(f_chat_id), int(l_msg_id), int(f_msg_id)):
+        #diff = int(l_msg_id) - int(f_msg_id)
+        msg_ids = list(range(int(f_msg_id), int(l_msg_id) + 1))
+        try:
+            messages = await client.get_messages(int(f_chat_id), msg_ids)
+        except Exception as e:
+            logger.error(f"Could Not Get Messages from DSTORE: {e}")
+            return await sts.delete()
+        for msg in messages:
             if msg.media:
                 media = getattr(msg, msg.media.value)
                 if BATCH_FILE_CAPTION:
