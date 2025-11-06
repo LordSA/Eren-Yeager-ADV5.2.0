@@ -30,12 +30,7 @@ class Media(Document):
 
     class Meta:
         collection_name = COLLECTION_NAME
-        indexes = [
-            IndexModel(
-                [('file_name', 'text'), ('caption', 'text')],
-                name='search_index'
-            )
-        ]
+        indexes = ['file_name']
 
 
 # -------------------- Core Functions --------------------
@@ -76,10 +71,17 @@ async def get_search_results(query, file_type=None, max_results=10, offset=0):
     query = query.strip()
     if not query:
         return [], 0, 0 
-    filter_query = {'$text': {'$search': query}}
 
-    if USE_CAPTION_FILTER is False:
-        pass 
+    query = re.sub(r"(_|\-|\.|\+)", " ", query)
+    try:
+        regex = re.compile(re.escape(query), flags=re.IGNORECASE)
+    except Exception as e:
+        logger.exception(f"Regex compile error: {e}")
+        return [], 0, 0
+    filter_query = {'file_name': regex}
+
+    if USE_CAPTION_FILTER:
+        filter_query = {'$or': [{'file_name': regex}, {'caption': regex}]}
 
     if file_type:
         filter_query['file_type'] = file_type
@@ -88,16 +90,7 @@ async def get_search_results(query, file_type=None, max_results=10, offset=0):
     next_offset = offset + max_results
     if next_offset > total_results:
         next_offset = ''
-    cursor = Media.find(
-        filter_query,
-        projection={'score': {'$meta': 'textScore'}}
-    ).sort(
-        [('score', {'$meta': 'textScore'})] 
-    ).skip(
-        offset
-    ).limit(
-        max_results
-    )
+   cursor = Media.find(filter_query).sort('file_name', 1).skip(offset).limit(max_results)
     
     files = await cursor.to_list(length=max_results)
     return files, next_offset, total_results
