@@ -32,4 +32,4 @@ async def repo(_, message):
     #await message.reply_text(REPO)
     buttons = [[InlineKeyboardButton('『 Repo 』',url=REPO_URL)]]
     reply_markup = InlineKeyboardMarkup(buttons)
-    await message.reply("Click the button below to get the source code!",reply_markup = reply_markup)
+    await message.reply_text("Click the button below to get the source code!",reply_markup = reply_markup)
