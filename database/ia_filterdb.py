@@ -90,7 +90,8 @@ async def get_search_results(query, file_type=None, max_results=10, offset=0):
     next_offset = offset + max_results
     if next_offset > total_results:
         next_offset = ''
-   cursor = Media.find(filter_query).sort('file_name', 1).skip(offset).limit(max_results)
+  
+    cursor = Media.find(filter_query).sort('file_name', 1).skip(offset).limit(max_results)
     
     files = await cursor.to_list(length=max_results)
     return files, next_offset, total_results
