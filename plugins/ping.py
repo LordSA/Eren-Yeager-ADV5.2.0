@@ -29,7 +29,12 @@ async def ping(_, message):
 
 @Client.on_message(filters.command('repo') & f_onw_fliter)
 async def repo(_, message):
-    #await message.reply_text(REPO)
-    buttons = [[InlineKeyboardButton('『 Repo 』',url=REPO_URL)]]
+    buttons = [[
+        InlineKeyboardButton('『 Repo 』',url=REPO_URL)
+        ]]
     reply_markup = InlineKeyboardMarkup(buttons)
-    await message.reply_text("Click the button below to get the source code!",reply_markup = reply_markup)
+    await message.reply_text(
+        text = REPO,
+        reply_markup = reply_markup,
+        disable_web_page_preview=True
+        )
