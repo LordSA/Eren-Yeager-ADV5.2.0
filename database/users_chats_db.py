@@ -62,6 +62,9 @@ class Database:
     async def delete_user(self, user_id: int):
         await self.col_users.delete_many({"id": int(user_id)})
 
+    async def get_user(self, user_id: int) -> Optional[Dict]:
+        return await self.col_users.find_one({"id": int(user_id)})
+
     # -------------------- Group Helpers --------------------
     def _new_group(self, group_id: int, title: str) -> Dict:
         return {

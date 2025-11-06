@@ -7,10 +7,10 @@ currently being supported with security updates.
 
 | Version | Supported           |
 | ------- | ------------------  |
-| v5.2.0  | New Adapted Version |
+| v5.2.2  | Beta Version (new)  |
+| v5.2.0  | Refurbished version |
 | v5.1.2  | Buggy One           |
 | v5.1.0  | Not Supported       |
-| v5.0.9  | Not Supported       |
 |  OLD Version is out to date   |
 
 ## Warning ## [ALERT]
