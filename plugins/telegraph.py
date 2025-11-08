@@ -45,10 +45,7 @@ async def telegraph_handler(client, message: Message):
         return await status_msg.edit_text("Unsupported file type.")
     try:
         await status_msg.edit_text("Downloading file to memory...")
-        file_stream = BytesIO()
-        await client.download_media(replied, file=file_stream)
-        file_stream.seek(0)
-
+        file_stream = await client.download_media(replied, in_memory=True)
         await status_msg.edit_text("Uploading to Telegraph...")
         files = {
             'file': (
