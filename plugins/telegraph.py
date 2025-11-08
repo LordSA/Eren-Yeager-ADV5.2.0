@@ -1,11 +1,13 @@
 import os
 import mimetypes
 import traceback
-import requests
+import aiohttp
+import logging
 from io import BytesIO
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 
+logger = logging.getLogger(__name__)
 # --- Helper function to get filename and extension ---
 def get_file_info(replied_message):
     """Extracts filename and extension from a message."""
@@ -47,23 +49,21 @@ async def telegraph_handler(client, message: Message):
         await status_msg.edit_text("Downloading file to memory...")
         file_stream = await client.download_media(replied, in_memory=True)
         await status_msg.edit_text("Uploading to Telegraph...")
-        files = {
-            'file': (
-                'file',       
-                file_stream,
-                mime_type 
-            )
-        }
-        
-        response = requests.post('https://telegra.ph/upload', files=files)
-        
-        if response.status_code == 200:
-            response_json = response.json()
-        else:
-            return await status_msg.edit_text(f"Upload Error: Status {response.status_code}. Response: {response.text}")
+        async with aiohttp.ClientSession() as session:
+            data = aiohttp.FormData()
+            data.add_field('file',
+            file_stream,
+            file_name='file',
+            content_type=mime_type)
+            async with session.post('https://telegra.ph/upload', data=data) as response:
+                if response.status == 200:
+                    response_json = await response.json()
+                else:
+                    error_text = await response.text()
+                    return await status_msg.edit_text(f"Upload Error: Status {response.status_code}. Response: {response.text}")
 
     except Exception as e:
-        traceback.print_exc()
+        logger.exception(f"Telegraph handler failed: {e}")
         return await status_msg.edit_text(f"An error occurred: {e}")
     finally:
         pass
