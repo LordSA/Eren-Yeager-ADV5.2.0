@@ -13,7 +13,7 @@ async def telegraph_handler(client, message: Message):
         return await message.reply("Reply to a supported media file")
 
     if not replied.media:
-        return await message.reply("Reply to a valid media file (photo, video, gif, or document)")
+        return await message.reply("Reply to a valid media file")
 
     status_msg = await message.reply("Processing...")
     
@@ -21,7 +21,6 @@ async def telegraph_handler(client, message: Message):
     try:
         await status_msg.edit_text("📥 Downloading...")
         
-        # Download the file
         file_path = await client.download_media(replied)
         
         if not file_path:
@@ -29,15 +28,8 @@ async def telegraph_handler(client, message: Message):
         
         await status_msg.edit_text("📤 Uploading to Telegraph...")
         
-        # Upload using telegraph library
         response = upload_file(file_path)
-        
-        if not response or not isinstance(response, list):
-            return await status_msg.edit_text("❌ Upload failed")
-        
-        # Get the link - response is a list of paths
-        telegraph_path = response[0] if isinstance(response[0], str) else response[0].get('src', '')
-        link = f"https://telegra.ph{telegraph_path}"
+        link = f"https://telegra.ph{response[0]}"
         
         await status_msg.delete()
         
@@ -56,7 +48,6 @@ async def telegraph_handler(client, message: Message):
         logger.exception(f"Telegraph upload failed: {e}")
         await status_msg.edit_text(f"❌ Error: {str(e)}")
     finally:
-        # Clean up temporary file
         if file_path and os.path.exists(file_path):
             try:
                 os.remove(file_path)
