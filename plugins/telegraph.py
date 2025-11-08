@@ -32,11 +32,12 @@ async def telegraph_handler(client, message: Message):
         # Upload using telegraph library
         response = upload_file(file_path)
         
-        if not response:
+        if not response or not isinstance(response, list):
             return await status_msg.edit_text("❌ Upload failed")
         
-        # Get the link
-        link = f"https://telegra.ph{response[0]}"
+        # Get the link - response is a list of paths
+        telegraph_path = response[0] if isinstance(response[0], str) else response[0].get('src', '')
+        link = f"https://telegra.ph{telegraph_path}"
         
         await status_msg.delete()
         
