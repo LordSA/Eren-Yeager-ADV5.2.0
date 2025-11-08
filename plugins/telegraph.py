@@ -1,7 +1,8 @@
 import os
 import mimetypes
 import traceback
-import aiohttp
+import requests  # <-- 1. Import requests
+import asyncio   # <-- 2. Import asyncio
 import logging
 from io import BytesIO
 from pyrogram import Client, filters
@@ -12,7 +13,7 @@ logger = logging.getLogger(__name__)
 # --- Helper function to get filename and extension ---
 def get_file_info(replied_message):
     """Extracts filename and extension from a message."""
-    filename = None
+    filename = "file" # Default
     file_ext = None
 
     if replied_message.photo:
@@ -25,9 +26,10 @@ def get_file_info(replied_message):
         filename = replied_message.document.file_name
     elif replied_message.video:
         filename = replied_message.video.file_name
-
+    
     if filename and file_ext is None:
         file_ext = os.path.splitext(filename)[1].lower()
+    
     if file_ext is None:
         file_ext = "" 
         filename = "file"
@@ -64,23 +66,25 @@ async def telegraph_handler(client, message: Message):
         
         await status_msg.edit_text("Uploading to Telegraph...")
 
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        # --- 3. THE FIX: Run blocking 'requests.post' in a thread ---
+        
+        # A. Prepare the 'files' data for the requests library
+        files_data = {
+            'file': (filename, file_stream, mime_type)
         }
+        
+        # B. Run the blocking 'requests.post' in an asyncio thread
+        response = await asyncio.to_thread(
+            requests.post,
+            'https://telegra.ph/upload',
+            files=files_data
+        )
 
-        async with aiohttp.ClientSession(headers=headers) as session:
-            data = aiohttp.FormData()
-            data.add_field('file',
-                           file_stream,
-                           filename='file', 
-                           content_type=mime_type)
-            
-            async with session.post('https://telegra.ph/upload', data=data) as response:
-                if response.status == 200:
-                    response_json = await response.json()
-                else:
-                    error_text = await response.text()
-                    return await status_msg.edit_text(f"Upload Error: Status {response.status}. Response: {error_text}")
+        if response.status_code == 200:
+            response_json = response.json()
+        else:
+            return await status_msg.edit_text(f"Upload Error: Status {response.status_code}. Response: {response.text}")
+        # --- END OF FIX ---
 
     except Exception as e:
         logger.exception(f"Telegraph handler failed: {e}")
