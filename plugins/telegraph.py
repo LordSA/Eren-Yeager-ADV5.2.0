@@ -53,7 +53,7 @@ async def telegraph_handler(client, message: Message):
             data = aiohttp.FormData()
             data.add_field('file',
             file_stream,
-            file_name='file',
+            filename='file',
             content_type=mime_type)
             async with session.post('https://telegra.ph/upload', data=data) as response:
                 if response.status == 200:
