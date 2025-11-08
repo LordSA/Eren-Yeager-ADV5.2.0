@@ -7,7 +7,7 @@ currently being supported with security updates.
 
 | Version | Supported           |
 | ------- | ------------------  |
-| v5.2.2  | Beta Version (new)  |
+| v5.2.3  | Beta Version (new)  |
 | v5.2.0  | Refurbished version |
 | v5.1.2  | Buggy One           |
 | v5.1.0  | Not Supported       |
