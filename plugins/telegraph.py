@@ -1,6 +1,6 @@
 import os
 import logging
-import aiohttp
+import requests
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 
@@ -28,25 +28,24 @@ async def telegraph_handler(client, message: Message):
         
         await status_msg.edit_text("📤 Uploading to Telegraph...")
         
-        # Use direct API call with aiohttp
-        async with aiohttp.ClientSession() as session:
-            with open(file_path, 'rb') as f:
-                form = aiohttp.FormData()
-                form.add_field('file', f, filename='file')
-                
-                async with session.post('https://telegra.ph/upload', data=form) as resp:
-                    if resp.status == 200:
-                        data = await resp.json()
-                        if isinstance(data, list) and len(data) > 0:
-                            if isinstance(data[0], dict) and 'src' in data[0]:
-                                link = f"https://telegra.ph{data[0]['src']}"
-                            else:
-                                return await status_msg.edit_text(f"❌ Unexpected response format")
-                        else:
-                            return await status_msg.edit_text(f"❌ Empty response from Telegraph")
-                    else:
-                        text = await resp.text()
-                        return await status_msg.edit_text(f"❌ Upload failed: {resp.status}")
+        # Open file and upload
+        with open(file_path, 'rb') as f:
+            files = {'file': ('file', f)}
+            response = requests.post('https://telegra.ph/upload', files=files)
+        
+        if response.status_code == 200:
+            data = response.json()
+            if isinstance(data, list) and len(data) > 0:
+                if isinstance(data[0], dict) and 'src' in data[0]:
+                    link = f"https://telegra.ph{data[0]['src']}"
+                elif isinstance(data[0], str):
+                    link = f"https://telegra.ph{data[0]}"
+                else:
+                    return await status_msg.edit_text(f"❌ Unexpected response: {data}")
+            else:
+                return await status_msg.edit_text(f"❌ Empty response")
+        else:
+            return await status_msg.edit_text(f"❌ Upload failed: {response.status_code}\n{response.text}")
         
         await status_msg.delete()
         
