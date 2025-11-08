@@ -1,6 +1,5 @@
 import os
 import aiohttp
-import asyncio
 import logging
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
@@ -43,41 +42,43 @@ async def telegraph_handler(client, message: Message):
     
     filename, file_ext = get_file_info(replied)
     
-    MIME_MAP = {
-        '.jpg': 'image/jpeg',
-        '.jpeg': 'image/jpeg',
-        '.png': 'image/png',
-        '.gif': 'image/gif',
-        '.mp4': 'video/mp4',
-    }
-    mime_type = MIME_MAP.get(file_ext)
+    SUPPORTED = ['.jpg', '.jpeg', '.png', '.gif', '.mp4']
     
-    if mime_type is None:
-        return await status_msg.edit_text(f"Unsupported file type: {file_ext}")
+    if file_ext not in SUPPORTED:
+        return await status_msg.edit_text(f"Unsupported file type: {file_ext}\nSupported: {', '.join(SUPPORTED)}")
         
+    file_path = None
     try:
         await status_msg.edit_text("Downloading...")
-        file_stream = await client.download_media(replied, in_memory=True)
-        file_stream.seek(0)
-        file_data = file_stream.read()
+        
+        # Download to temporary file
+        file_path = await client.download_media(replied)
         
         await status_msg.edit_text("Uploading to Telegraph...")
 
-        # Use aiohttp for async upload
+        # Upload using aiohttp with file
         async with aiohttp.ClientSession() as session:
-            form = aiohttp.FormData()
-            form.add_field('file', file_data, filename=filename, content_type=mime_type)
-            
-            async with session.post('https://telegra.ph/upload', data=form) as resp:
-                if resp.status == 200:
-                    response_json = await resp.json()
-                else:
-                    text = await resp.text()
-                    return await status_msg.edit_text(f"Upload failed: {resp.status}\n{text}")
+            with open(file_path, 'rb') as f:
+                form = aiohttp.FormData()
+                form.add_field('file', f, filename=os.path.basename(file_path))
+                
+                async with session.post('https://telegra.ph/upload', data=form) as resp:
+                    if resp.status == 200:
+                        response_json = await resp.json()
+                    else:
+                        text = await resp.text()
+                        return await status_msg.edit_text(f"Upload failed: {resp.status}\n{text}")
 
     except Exception as e:
         logger.exception(f"Telegraph upload failed: {e}")
         return await status_msg.edit_text(f"Error: {str(e)}")
+    finally:
+        # Clean up temporary file
+        if file_path and os.path.exists(file_path):
+            try:
+                os.remove(file_path)
+            except:
+                pass
 
     # Process response
     link = None
