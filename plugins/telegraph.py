@@ -1,8 +1,8 @@
 import os
 import logging
+import aiohttp
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
-from telegraph import upload_file
 
 logger = logging.getLogger(__name__)
 
@@ -28,8 +28,25 @@ async def telegraph_handler(client, message: Message):
         
         await status_msg.edit_text("📤 Uploading to Telegraph...")
         
-        response = upload_file(file_path)
-        link = f"https://telegra.ph{response[0]}"
+        # Use direct API call with aiohttp
+        async with aiohttp.ClientSession() as session:
+            with open(file_path, 'rb') as f:
+                form = aiohttp.FormData()
+                form.add_field('file', f, filename='file')
+                
+                async with session.post('https://telegra.ph/upload', data=form) as resp:
+                    if resp.status == 200:
+                        data = await resp.json()
+                        if isinstance(data, list) and len(data) > 0:
+                            if isinstance(data[0], dict) and 'src' in data[0]:
+                                link = f"https://telegra.ph{data[0]['src']}"
+                            else:
+                                return await status_msg.edit_text(f"❌ Unexpected response format")
+                        else:
+                            return await status_msg.edit_text(f"❌ Empty response from Telegraph")
+                    else:
+                        text = await resp.text()
+                        return await status_msg.edit_text(f"❌ Upload failed: {resp.status}")
         
         await status_msg.delete()
         
