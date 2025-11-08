@@ -48,6 +48,7 @@ async def telegraph_handler(client, message: Message):
     try:
         await status_msg.edit_text("Downloading file to memory...")
         file_stream = await client.download_media(replied, in_memory=True)
+        file_stream.seek(0)
         await status_msg.edit_text("Uploading to Telegraph...")
         async with aiohttp.ClientSession() as session:
             data = aiohttp.FormData()
