@@ -56,17 +56,18 @@ async def start(client, message):
             InlineKeyboardButton('『𝕬𝙱𝙾𝚄𝚃』', callback_data='about')
         ]]
         reply_markup = InlineKeyboardMarkup(buttons)
+        ct = script.START_TXT.format(message.from_user.mention, temp.U_NAME, temp.B_NAME)
         if CHPV == 'vid':
             await message.reply_video(
                 video=MS,
-                caption=caption_text,
+                caption=ct,
                 reply_markup=reply_markup,
                 parse_mode=enums.ParseMode.HTML
             )
         else:
             await message.reply_photo(
                 photo=MS,
-                caption=caption_text,
+                caption=ct,
                 reply_markup=reply_markup,
                 parse_mode=enums.ParseMode.HTML
             )
@@ -113,17 +114,18 @@ async def start(client, message):
             InlineKeyboardButton('『𝕬𝙱𝙾𝚄𝚃』', callback_data='about')
         ]]
         reply_markup = InlineKeyboardMarkup(buttons)
+        ct = script.START_TXT.format(message.from_user.mention, temp.U_NAME, temp.B_NAME)
         if CHPV == 'vid':
             await message.reply_video(
                 video=MS,
-                caption=caption_text,
+                caption=ct,
                 reply_markup=reply_markup,
                 parse_mode=enums.ParseMode.HTML
             )
         else:
             await message.reply_photo(
                 photo=MS,
-                caption=caption_text,
+                caption=ct,
                 reply_markup=reply_markup,
                 parse_mode=enums.ParseMode.HTML
             )
