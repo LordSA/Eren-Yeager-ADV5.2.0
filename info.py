@@ -76,9 +76,3 @@ contact_filter = filters.create(
     lambda _, __, message:
     (message.from_user and message.from_user.is_contact) or message.outgoing
 )
-
-ML = None
-if CHPV == 'vid':
-    ML = VIDS
-else:
-    ML = PICS
