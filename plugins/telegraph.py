@@ -11,7 +11,9 @@ logger = logging.getLogger(__name__)
 # --- Helper function to get filename and extension ---
 def get_file_info(replied_message):
     """Extracts filename and extension from a message."""
-    filename = None
+    filename = "file"
+    file_ext = None
+
     if replied_message.document:
         filename = replied_message.document.file_name
     elif replied_message.video:
@@ -20,11 +22,13 @@ def get_file_info(replied_message):
     if filename:
         return filename, os.path.splitext(filename)[1].lower()
     elif replied_message.photo:
-        return "photo.jpg", ".jpg"
+        filename = "photo.jpg"
+        file_ext = ".jpg"
     elif replied_message.animation:
-        return "animation.gif", ".gif"
+        file_name = "animation.gif"
+        file_ext = ".gif"
         
-    return None, None
+    return file_name, file_ext
 
 
 @Client.on_message(filters.command(["tgmedia", "tgraph", "telegraph"]))
@@ -44,18 +48,23 @@ async def telegraph_handler(client, message: Message):
     }
     mime_type = MIME_MAP.get(file_ext)
     if mime_type is None:
-        return await status_msg.edit_text("Unsupported file type.")
+        return await status_msg.edit_text("Unsupported file type: {file_ext}")
     try:
         await status_msg.edit_text("Downloading file to memory...")
         file_stream = await client.download_media(replied, in_memory=True)
         file_stream.seek(0)
+
         await status_msg.edit_text("Uploading to Telegraph...")
-        async with aiohttp.ClientSession() as session:
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        async with aiohttp.ClientSession(headers=headers) as session:
             data = aiohttp.FormData()
             data.add_field('file',
-            file_stream,
-            filename='file',
-            content_type=mime_type)
+                           file_stream,
+                           filename=filename,
+                           content_type=mime_type)
+                           
             async with session.post('https://telegra.ph/upload', data=data) as response:
                 if response.status == 200:
                     response_json = await response.json()
