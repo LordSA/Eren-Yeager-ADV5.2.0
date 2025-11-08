@@ -1,6 +1,6 @@
 import os
 import logging
-import requests
+import httpx
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 
@@ -28,22 +28,28 @@ async def telegraph_handler(client, message: Message):
         
         await status_msg.edit_text("📤 Uploading to Telegraph...")
         
-        # Open file and upload
-        with open(file_path, 'rb') as f:
-            files = {'file': ('file', f)}
-            response = requests.post('https://telegra.ph/upload', files=files)
+        # Upload using httpx
+        async with httpx.AsyncClient() as client_http:
+            with open(file_path, 'rb') as f:
+                files = {'file': f}
+                response = await client_http.post(
+                    'https://telegra.ph/upload',
+                    files=files,
+                    timeout=30.0
+                )
         
         if response.status_code == 200:
             data = response.json()
             if isinstance(data, list) and len(data) > 0:
-                if isinstance(data[0], dict) and 'src' in data[0]:
-                    link = f"https://telegra.ph{data[0]['src']}"
-                elif isinstance(data[0], str):
-                    link = f"https://telegra.ph{data[0]}"
+                item = data[0]
+                if isinstance(item, dict) and 'src' in item:
+                    link = f"https://telegra.ph{item['src']}"
+                elif isinstance(item, str):
+                    link = f"https://telegra.ph{item}"
                 else:
-                    return await status_msg.edit_text(f"❌ Unexpected response: {data}")
+                    return await status_msg.edit_text(f"❌ Unexpected format: {data}")
             else:
-                return await status_msg.edit_text(f"❌ Empty response")
+                return await status_msg.edit_text(f"❌ Empty response: {data}")
         else:
             return await status_msg.edit_text(f"❌ Upload failed: {response.status_code}\n{response.text}")
         
