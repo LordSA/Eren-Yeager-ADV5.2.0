@@ -65,18 +65,18 @@ async def telegraph_handler(client, message: Message):
         
         await status_msg.edit_text("Uploading to Telegraph...")
 
-        # Read the file content as bytes
+        # Read file bytes and create a new BytesIO
         file_stream.seek(0)
         file_bytes = file_stream.read()
+        file_io = BytesIO(file_bytes)
+        file_io.name = filename  # Set the name attribute
+        file_io.seek(0)
         
-        # Prepare files for upload
-        files = {'file': (filename, file_bytes, mime_type)}
-        
-        # Upload using asyncio.to_thread
+        # Upload with proper multipart form data
         response = await asyncio.to_thread(
             requests.post,
             'https://telegra.ph/upload',
-            files=files
+            files={'file': (filename, file_io, mime_type)}
         )
 
         if response.status_code == 200:
@@ -87,6 +87,12 @@ async def telegraph_handler(client, message: Message):
     except Exception as e:
         logger.exception(f"Telegraph handler failed: {e}")
         return await status_msg.edit_text(f"An error occurred: {e}")
+    finally:
+        # Close the file stream
+        if 'file_stream' in locals():
+            file_stream.close()
+        if 'file_io' in locals():
+            file_io.close()
 
     # --- Process the response ---
     link = None
@@ -108,9 +114,9 @@ async def telegraph_handler(client, message: Message):
         reply_markup=InlineKeyboardMarkup(
             [
                 [
-                    InlineKeyboardButton("『𝕺𝙿𝙴𝙽 B_𝕷𝙸𝙽𙺈』", url=link), 
+                    InlineKeyboardButton("『𝕺𝙿𝙴𝙽 B_𝕷𝙸𝙽𝙺『』", url=link), 
                     InlineKeyboardButton(
-                        "『𝕾𝙷𝙰𝚁𝙴 𝕷𝙸𝙽𙺈』",
+                        "『𝕾𝙷𝙰𝚁𝙴 𝕷𝙸𝙽𝙺『』",
                         url=f"https://telegram.me/share/url?url={link}",
                     ),
                 ],
