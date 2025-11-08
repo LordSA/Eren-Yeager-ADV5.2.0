@@ -8,7 +8,7 @@
 [![Stars](https://img.shields.io/github/stars/LordSA/Eren-Yeager-ADV?style=flat-square&color=yellow)](https://github.com/LordSA/Eren-Yeager-ADV/stargazers)  
 [![Forks](https://img.shields.io/github/forks/LordSA/Eren-Yeager-ADV?style=flat-square&color=orange)](https://github.com/LordSA/Eren-Yeager-ADV/fork)  
 [![Size](https://img.shields.io/github/repo-size/LordSA/Eren-Yeager-ADV?style=flat-square&color=green)](https://github.com/LordSA/Eren-Yeager-ADV/)  
-[![Contributors](https://img.shields.io/github/contributors/LordSA/Eren-Yeager-ADVstyle=flat-square&color=green)](https://github.com/LordSA/Eren-Yeager-ADV/graphs/contributors)  
+[![Contributors](https://img.shields.io/github/contributors/LordSA/Eren-Yeager-ADV?style=flat-square&color=green)](https://github.com/LordSA/Eren-Yeager-ADV/graphs/contributors)  
 [![License](https://img.shields.io/badge/License-AGPLv3-blue)](https://www.gnu.org/licenses/agpl-3.0.en.html)  
 
 ---
