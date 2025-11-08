@@ -5,10 +5,10 @@
 
 # 𝙴𝚁𝙴𝙽 𝚈𝙴𝙰𝙶𝙴𝚁 ADV5.2.0
 
-[![Stars](https://img.shields.io/github/stars/LordSA/Eren-Yeager_ADV5.2.0?style=flat-square&color=yellow)](https://github.com/LordSA/Eren-Yeager_ADV5.2.0/stargazers)  
-[![Forks](https://img.shields.io/github/forks/LordSA/Eren-Yeager_ADV5.2.0?style=flat-square&color=orange)](https://github.com/LordSA/Eren-Yeager_ADV5.2.0/fork)  
-[![Size](https://img.shields.io/github/repo-size/LordSA/Eren-Yeager_ADV5.2.0?style=flat-square&color=green)](https://github.com/LordSA/Eren-Yeager_ADV5.2.0/)  
-[![Contributors](https://img.shields.io/github/contributors/LordSA/Eren-Yeager_ADV5.2.0?style=flat-square&color=green)](https://github.com/LordSA/Eren-Yeager_ADV5.2.0/graphs/contributors)  
+[![Stars](https://img.shields.io/github/stars/LordSA/Eren-Yeager_ADV?style=flat-square&color=yellow)](https://github.com/LordSA/Eren-Yeager_ADV/stargazers)  
+[![Forks](https://img.shields.io/github/forks/LordSA/Eren-Yeager_ADV?style=flat-square&color=orange)](https://github.com/LordSA/Eren-Yeager_ADV/fork)  
+[![Size](https://img.shields.io/github/repo-size/LordSA/Eren-Yeager_ADV?style=flat-square&color=green)](https://github.com/LordSA/Eren-Yeager_ADV/)  
+[![Contributors](https://img.shields.io/github/contributors/LordSA/Eren-Yeager_ADVstyle=flat-square&color=green)](https://github.com/LordSA/Eren-Yeager_ADV/graphs/contributors)  
 [![License](https://img.shields.io/badge/License-AGPLv3-blue)](https://www.gnu.org/licenses/agpl-3.0.en.html)  
 
 ---
