@@ -1,4 +1,5 @@
 from info import VIDS, PICS, CHPV
+import random
 
 ML = None
 if CHPV == 'vid':
