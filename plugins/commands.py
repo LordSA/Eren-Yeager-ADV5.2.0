@@ -57,19 +57,19 @@ async def start(client, message):
         ]]
         reply_markup = InlineKeyboardMarkup(buttons)
         if CHPV == 'vid':
-                await message.reply_video(
-                    video=MS,
-                    caption=caption_text,
-                    reply_markup=reply_markup,
-                    parse_mode=enums.ParseMode.HTML
-                )
-            else:
-                await message.reply_photo(
-                    photo=MS,
-                    caption=caption_text,
-                    reply_markup=reply_markup,
-                    parse_mode=enums.ParseMode.HTML
-                )
+            await message.reply_video(
+                video=MS,
+                caption=caption_text,
+                reply_markup=reply_markup,
+                parse_mode=enums.ParseMode.HTML
+            )
+        else:
+            await message.reply_photo(
+                photo=MS,
+                caption=caption_text,
+                reply_markup=reply_markup,
+                parse_mode=enums.ParseMode.HTML
+            )
         return
     if AUTH_CHANNEL and not await is_subscribed(client, message):
         try:
@@ -114,19 +114,19 @@ async def start(client, message):
         ]]
         reply_markup = InlineKeyboardMarkup(buttons)
         if CHPV == 'vid':
-                await message.reply_video(
-                    video=MS,
-                    caption=caption_text,
-                    reply_markup=reply_markup,
-                    parse_mode=enums.ParseMode.HTML
-                )
-            else:
-                await message.reply_photo(
-                    photo=MS,
-                    caption=caption_text,
-                    reply_markup=reply_markup,
-                    parse_mode=enums.ParseMode.HTML
-                )
+            await message.reply_video(
+                video=MS,
+                caption=caption_text,
+                reply_markup=reply_markup,
+                parse_mode=enums.ParseMode.HTML
+            )
+        else:
+            await message.reply_photo(
+                photo=MS,
+                caption=caption_text,
+                reply_markup=reply_markup,
+                parse_mode=enums.ParseMode.HTML
+            )
         return
     data = message.command[1]
     try:
