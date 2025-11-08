@@ -60,7 +60,7 @@ async def telegraph_handler(client, message: Message):
                     response_json = await response.json()
                 else:
                     error_text = await response.text()
-                    return await status_msg.edit_text(f"Upload Error: Status {response.status_code}. Response: {response.text}")
+                    return await status_msg.edit_text(f"Upload Error: Status {response.status}. Response: {response.text}")
 
     except Exception as e:
         logger.exception(f"Telegraph handler failed: {e}")
