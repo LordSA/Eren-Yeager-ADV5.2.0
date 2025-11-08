@@ -1,5 +1,6 @@
 import os
-import aiohttp
+import requests
+import asyncio
 import logging
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
@@ -12,24 +13,19 @@ def get_file_info(replied_message):
     file_ext = None
 
     if replied_message.photo:
-        filename = "photo.jpg"
         file_ext = ".jpg"
     elif replied_message.animation:
-        filename = "animation.gif"
         file_ext = ".gif"
     elif replied_message.document:
         filename = replied_message.document.file_name
-    elif replied_message.video:
-        filename = replied_message.video.file_name
-    
-    if filename and file_ext is None:
         file_ext = os.path.splitext(filename)[1].lower()
+    elif replied_message.video:
+        file_ext = ".mp4"
     
-    if file_ext is None:
+    if not file_ext:
         file_ext = ""
-        filename = "file"
 
-    return filename, file_ext
+    return file_ext
 
 
 @Client.on_message(filters.command("tgraph"))
@@ -40,40 +36,43 @@ async def telegraph_handler(client, message: Message):
 
     status_msg = await message.reply("Processing...")
     
-    filename, file_ext = get_file_info(replied)
+    file_ext = get_file_info(replied)
     
-    SUPPORTED = ['.jpg', '.jpeg', '.png', '.gif', '.mp4']
+    # Map extensions to mime types
+    MIME_MAP = {
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.png': 'image/png',
+        '.gif': 'image/gif',
+        '.mp4': 'video/mp4',
+    }
     
-    if file_ext not in SUPPORTED:
-        return await status_msg.edit_text(f"Unsupported file type: {file_ext}\nSupported: {', '.join(SUPPORTED)}")
+    mime_type = MIME_MAP.get(file_ext)
+    
+    if mime_type is None:
+        return await status_msg.edit_text(f"Unsupported file type: {file_ext}\nSupported: jpg, jpeg, png, gif, mp4")
         
     file_path = None
     try:
         await status_msg.edit_text("Downloading...")
-        
-        # Download to temporary file
         file_path = await client.download_media(replied)
         
         await status_msg.edit_text("Uploading to Telegraph...")
 
-        # Upload using aiohttp with file
-        async with aiohttp.ClientSession() as session:
+        # Upload using requests in thread - THE KEY: filename must be 'file'
+        def upload():
             with open(file_path, 'rb') as f:
-                form = aiohttp.FormData()
-                form.add_field('file', f, filename=os.path.basename(file_path))
-                
-                async with session.post('https://telegra.ph/upload', data=form) as resp:
-                    if resp.status == 200:
-                        response_json = await resp.json()
-                    else:
-                        text = await resp.text()
-                        return await status_msg.edit_text(f"Upload failed: {resp.status}\n{text}")
+                return requests.post(
+                    'https://telegra.ph/upload',
+                    files={'file': ('file', f, mime_type)}
+                ).json()
+        
+        response_json = await asyncio.to_thread(upload)
 
     except Exception as e:
         logger.exception(f"Telegraph upload failed: {e}")
         return await status_msg.edit_text(f"Error: {str(e)}")
     finally:
-        # Clean up temporary file
         if file_path and os.path.exists(file_path):
             try:
                 os.remove(file_path)
