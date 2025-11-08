@@ -1,8 +1,8 @@
 import os
 import mimetypes
 import traceback
-import requests  # <-- 1. Import requests
-import asyncio   # <-- 2. Import asyncio
+import requests
+import asyncio
 import logging
 from io import BytesIO
 from pyrogram import Client, filters
@@ -62,29 +62,27 @@ async def telegraph_handler(client, message: Message):
     try:
         await status_msg.edit_text("Downloading file to memory...")
         file_stream = await client.download_media(replied, in_memory=True)
-        file_stream.seek(0)
         
         await status_msg.edit_text("Uploading to Telegraph...")
 
-        # --- 3. THE FIX: Run blocking 'requests.post' in a thread ---
+        # Read the file content as bytes
+        file_stream.seek(0)
+        file_bytes = file_stream.read()
         
-        # A. Prepare the 'files' data for the requests library
-        files_data = {
-            'file': (filename, file_stream, mime_type)
-        }
+        # Prepare files for upload
+        files = {'file': (filename, file_bytes, mime_type)}
         
-        # B. Run the blocking 'requests.post' in an asyncio thread
+        # Upload using asyncio.to_thread
         response = await asyncio.to_thread(
             requests.post,
             'https://telegra.ph/upload',
-            files=files_data
+            files=files
         )
 
         if response.status_code == 200:
             response_json = response.json()
         else:
             return await status_msg.edit_text(f"Upload Error: Status {response.status_code}. Response: {response.text}")
-        # --- END OF FIX ---
 
     except Exception as e:
         logger.exception(f"Telegraph handler failed: {e}")
