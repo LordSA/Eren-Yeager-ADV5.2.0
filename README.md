@@ -49,15 +49,16 @@ Create a `.env` file in the root directory (or use an `ecosystem.config.js` file
 | `CHANNELS` | A space-separated list of channel/group IDs (e.g., `-100123... -100456...`) for the bot to **automatically index** new media from. |
 | `AUTH_CHANNEL` | The ID of a channel/group that users **must** join to use the bot (Force Subscribe). |
 | `SUPPORT_CHAT` | The username of your support group (e.g., `mwpro11`) used in help messages. |
-| `PM2_BOT_NAME` | The **exact name** of your bot in PM2 (e.g., `eren-bot`). **Required for the `/update` command to work.** |
+| `PM2_BOT_NAME` | The **exact name** of your bot in PM2 (e.g., `eren-bot`). **Required for the `/update` command to work.** for vps hosters it is important |
 | `P_TTI_SHOW_OFF` | `True` or `False`. If `True`, forces users to click a "Send to PM" button instead of receiving files in the group. |
 | `SINGLE_BUTTON` | `True` or `False`. If `True`, filter results show as one button (`[File Name (Size)]`). If `False`, they show as two (`[File Name] [Size]`). |
 | `PROTECT_CONTENT` | `True` or `False`. If `True`, all files sent by the bot will have "Forwarding" disabled. |
 | `IMDB` | `True` or `False`. Set to `False` to disable all IMDB fetching. |
 | `SPELL_CHECK_REPLY`| `True` or `False`. If `True`, the bot will suggest corrected spellings for failed searches. |
 | `MELCOW_NEW_USERS` | `True` or `False`. Set to `True` to enable a welcome message for new users joining groups. |
-| `PICS` | A space-separated list of Telegraph image URLs for the `/start` command. |
-| `VIDS` | A space-separated list of Telegraph video URLs for the `/start` command (one is chosen randomly). |
+| `CHPV` | Controls the media type on the `/start` command. Set to `pic` (default) or `vid`. |
+| `PICS` | A space-separated list of Telegraph **photo** URLs for the `/start` command (used if `CHPV` is 'pic'). |
+| `VIDS` | A space-separated list of Telegraph **video** URLs for the `/start` command (used if `CHPV` is 'vid'). |
 | `CUSTOM_FILE_CAPTION` | A custom template for file captions. See `info.py` for an example. |
 | `BATCH_FILE_CAPTION` | A custom template for batch file captions. See `info.py` for an example. |
 | `IMDB_TEMPLATE` | A custom template for IMDB captions. See `info.py` for an example. |

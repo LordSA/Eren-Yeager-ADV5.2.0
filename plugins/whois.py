@@ -61,12 +61,10 @@ async def who_is(client, message: Message):
             
     chat_photo = from_user.photo
     if chat_photo:
-        file_stream = BytesIO()
-        await client.download_media(
+        file_stream = await client.download_media(
             message=chat_photo.big_file_id,
-            file=file_stream
+            in_memory=True
         )
-        file_stream.seek(0)
         await message.reply_photo(
             photo=file_stream, 
             quote=True,
