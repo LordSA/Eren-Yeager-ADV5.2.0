@@ -401,80 +401,50 @@ async def delete_all_index_confirm(bot, message):
 @check_group_admin
 async def settings(client, message, grp_id, title):
     settings = await get_settings(grp_id) 
-
-    if settings is not None:
-        buttons = [
+    buttons = [
             [
-                InlineKeyboardButton(
-                    '𝙵𝙸𝙻𝚃𝙴𝚁 𝙱𝚄𝚃𝚃𝙾𝙽',
-                    callback_data=f'setgs#button#{settings["button"]}#{grp_id}',
-                ),
-                InlineKeyboardButton(
-                    '𝚂𝙸𝙽𝙶𝙻𝙴' if settings["button"] else '𝙳𝙾𝚄𝙱𝙻𝙴',
-                    callback_data=f'setgs#button#{settings["button"]}#{grp_id}',
-                ),
+                InlineKeyboardButton('『𝙵𝙸𝙻𝚃𝙴𝚁 𝙱𝚄𝚃𝚃𝙾𝙽』',
+                                     callback_data=f'setgs#button#{settings.get("button", False)}#{str(grp_id)}'),
+                InlineKeyboardButton('𝚂𝙸𝙽𝙶𝙻𝙴' if settings.get("button", False) else '𝙳𝙾𝚄𝙱𝙻𝙴',
+                                     callback_data=f'setgs#button#{settings.get("button", False)}#{str(grp_id)}')
             ],
             [
-                InlineKeyboardButton(
-                    '𝙱𝙾𝚃 𝙿𝙼',
-                    callback_data=f'setgs#botpm#{settings["botpm"]}#{grp_id}',
-                ),
-                InlineKeyboardButton(
-                    '✅ 𝚈𝙴𝚂' if settings["botpm"] else '❌ 𝙽𝙾',
-                    callback_data=f'setgs#botpm#{settings["botpm"]}#{grp_id}',
-                ),
+                InlineKeyboardButton('『𝙱𝙾𝚃 𝙿𝙼』', callback_data=f'setgs#botpm#{settings.get("botpm", False)}#{str(grp_id)}'),
+                InlineKeyboardButton('✅ 𝚈𝙴𝚂' if settings.get("botpm", False) else '❌ 𝙽𝙾',
+                                     callback_data=f'setgs#botpm#{settings.get("botpm", False)}#{str(grp_id)}')
             ],
             [
-                InlineKeyboardButton(
-                    '𝙵𝙸𝙻𝙴 𝚂𝙴𝙲𝚄𝚁𝙴',
-                    callback_data=f'setgs#file_secure#{settings["file_secure"]}#{grp_id}',
-                ),
-                InlineKeyboardButton(
-                    '✅ 𝚈𝙴𝚂' if settings["file_secure"] else '❌ 𝙽𝙾',
-                    callback_data=f'setgs#file_secure#{settings["file_secure"]}#{grp_id}',
-                ),
+                InlineKeyboardButton('『𝙵𝙸𝙻𝙴 𝚂𝙴𝙲𝚄𝚁𝙴』',
+                                     callback_data=f'setgs#file_secure#{settings.get("file_secure", False)}#{str(grp_id)}'),
+                InlineKeyboardButton('✅ 𝚈𝙴𝚂' if settings.get("file_secure", False) else '❌ 𝙽𝙾',
+                                     callback_data=f'setgs#file_secure#{settings.get("file_secure", False)}#{str(grp_id)}')
             ],
             [
-                InlineKeyboardButton(
-                    '𝙸𝙼𝙳𝙱',
-                    callback_data=f'setgs#imdb#{settings["imdb"]}#{grp_id}',
-                ),
-                InlineKeyboardButton(
-                    '✅ 𝚈𝙴𝚂' if settings["imdb"] else '❌ 𝙽𝙾',
-                    callback_data=f'setgs#imdb#{settings["imdb"]}#{grp_id}',
-                ),
+                InlineKeyboardButton('『𝙸𝙼𝙳𝙱』', callback_data=f'setgs#imdb#{settings.get("imdb", False)}#{str(grp_id)}'),
+                InlineKeyboardButton('✅ 𝚈𝙴𝚂' if settings.get("imdb", False) else '❌ 𝙽𝙾',
+                                     callback_data=f'setgs#imdb#{settings.get("imdb", False)}#{str(grp_id)}')
             ],
             [
-                InlineKeyboardButton(
-                    '𝚂𝙿𝙴𝙻𝙻 𝙲𝙷𝙴𝙲𝙺',
-                    callback_data=f'setgs#spell_check#{settings["spell_check"]}#{grp_id}',
-                ),
-                InlineKeyboardButton(
-                    '✅ 𝚈𝙴𝚂' if settings["spell_check"] else '❌ 𝙽𝙾',
-                    callback_data=f'setgs#spell_check#{settings["spell_check"]}#{grp_id}',
-                ),
+                InlineKeyboardButton('『𝚂𝙿𝙴𝙻𝙻 𝙲𝙷𝙴𝙲𝙺』',
+                                     callback_data=f'setgs#spell_check#{settings.get("spell_check", False)}#{str(grp_id)}'),
+                InlineKeyboardButton('✅ 𝚈𝙴𝚂' if settings.get("spell_check", False) else '❌ 𝙽𝙾',
+                                     callback_data=f'setgs#spell_check#{settings.get("spell_check", False)}#{str(grp_id)}')
             ],
             [
-                InlineKeyboardButton(
-                    '𝚆𝙴𝙻𝙲𝙾𝙼𝙴',
-                    callback_data=f'setgs#welcome#{settings["welcome"]}#{grp_id}',
-                ),
-                InlineKeyboardButton(
-                    '✅ 𝚈𝙴𝚂' if settings["welcome"] else '❌ 𝙽𝙾',
-                    callback_data=f'setgs#welcome#{settings["welcome"]}#{grp_id}',
-                ),
-            ],
+                InlineKeyboardButton('『𝚆𝙴𝙻𝙲𝙾𝙼𝙴 𝚂𝙿𝙴𝙴𝙲𝙷』', callback_data=f'setgs#welcome#{settings.get("welcome", False)}#{str(grp_id)}'),
+                InlineKeyboardButton('✅ 𝚈𝙴𝚂' if settings.get("welcome", False) else '❌ 𝙽𝙾',
+                                     callback_data=f'setgs#welcome#{settings.get("welcome", False)}#{str(grp_id)}')
+            ]
         ]
 
-        reply_markup = InlineKeyboardMarkup(buttons)
-
-        await message.reply_text(
-            text=f"<b>Change Your Settings for {title} As Your Wish ⚙</b>",
-            reply_markup=reply_markup,
-            disable_web_page_preview=True,
-            parse_mode=enums.ParseMode.HTML,
-            reply_to_message_id=message.id
-        )
+    reply_markup = InlineKeyboardMarkup(buttons)
+    await message.reply_text(
+        text=f"<b>Change Your Settings for {title} As Your Wish ⚙</b>",
+        reply_markup=reply_markup,
+        disable_web_page_preview=True,
+        parse_mode=enums.ParseMode.HTML,
+        reply_to_message_id=message.id
+    )
 
 
 @Client.on_message(filters.command('set_template'))
