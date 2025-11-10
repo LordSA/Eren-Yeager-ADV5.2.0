@@ -403,65 +403,71 @@ async def settings(client, message, grp_id, title):
     settings = await get_settings(grp_id) 
 
     if settings is not None:
+        btn_s = settings.get("button", False)
+        pm_s = settings.get("botpm", False)
+        sec_s = settings.get("file_secure", False)
+        imdb_s = settings.get("imdb", False)
+        spell_s = settings.get("spell_check", False)
+        wel_s = settings.get("welcome", False)
         buttons = [
             [
                 InlineKeyboardButton(
                     '𝙵𝙸𝙻𝚃𝙴𝚁 𝙱𝚄𝚃𝚃𝙾𝙽',
-                    callback_data=f'setgs#button#{settings["button"]}#{grp_id}',
+                    callback_data=f'setgs#button#{btn_s}#{grp_id}',
                 ),
                 InlineKeyboardButton(
-                    '𝚂𝙸𝙽𝙶𝙻𝙴' if settings["button"] else '𝙳𝙾𝚄𝙱𝙻𝙴',
-                    callback_data=f'setgs#button#{settings["button"]}#{grp_id}',
+                    '𝚂𝙸𝙽𝙶𝙻𝙴' if btn_s else '𝙳𝙾𝚄𝙱𝙻𝙴',
+                    callback_data=f'setgs#button#{btn_s}#{grp_id}',
                 ),
             ],
             [
                 InlineKeyboardButton(
                     '𝙱𝙾𝚃 𝙿𝙼',
-                    callback_data=f'setgs#botpm#{settings["botpm"]}#{grp_id}',
+                    callback_data=f'setgs#botpm#{pm_s}#{grp_id}',
                 ),
                 InlineKeyboardButton(
-                    '✅ 𝚈𝙴𝚂' if settings["botpm"] else '❌ 𝙽𝙾',
-                    callback_data=f'setgs#botpm#{settings["botpm"]}#{grp_id}',
+                    '✅ 𝚈𝙴𝚂' if pm_s else '❌ 𝙽𝙾',
+                    callback_data=f'setgs#botpm#{pm_s}#{grp_id}',
                 ),
             ],
             [
                 InlineKeyboardButton(
                     '𝙵𝙸𝙻𝙴 𝚂𝙴𝙲𝚄𝚁𝙴',
-                    callback_data=f'setgs#file_secure#{settings["file_secure"]}#{grp_id}',
+                    callback_data=f'setgs#file_secure#{sec_s}#{grp_id}',
                 ),
                 InlineKeyboardButton(
-                    '✅ 𝚈𝙴𝚂' if settings["file_secure"] else '❌ 𝙽𝙾',
-                    callback_data=f'setgs#file_secure#{settings["file_secure"]}#{grp_id}',
+                    '✅ 𝚈𝙴𝚂' if sec_s else '❌ 𝙽𝙾',
+                    callback_data=f'setgs#file_secure#{sec_s}#{grp_id}',
                 ),
             ],
             [
                 InlineKeyboardButton(
                     '𝙸𝙼𝙳𝙱',
-                    callback_data=f'setgs#imdb#{settings["imdb"]}#{grp_id}',
+                    callback_data=f'setgs#imdb#{imdb_s}#{grp_id}',
                 ),
                 InlineKeyboardButton(
-                    '✅ 𝚈𝙴𝚂' if settings["imdb"] else '❌ 𝙽𝙾',
-                    callback_data=f'setgs#imdb#{settings["imdb"]}#{grp_id}',
+                    '✅ 𝚈𝙴𝚂' if imdb_s else '❌ 𝙽𝙾',
+                    callback_data=f'setgs#imdb#{imdb_s}#{grp_id}',
                 ),
             ],
             [
                 InlineKeyboardButton(
                     '𝚂𝙿𝙴𝙻𝙻 𝙲𝙷𝙴𝙲𝙺',
-                    callback_data=f'setgs#spell_check#{settings["spell_check"]}#{grp_id}',
+                    callback_data=f'setgs#spell_check#{spell_s}#{grp_id}',
                 ),
                 InlineKeyboardButton(
-                    '✅ 𝚈𝙴𝚂' if settings["spell_check"] else '❌ 𝙽𝙾',
-                    callback_data=f'setgs#spell_check#{settings["spell_check"]}#{grp_id}',
+                    '✅ 𝚈𝙴𝚂' if spell_s else '❌ 𝙽𝙾',
+                    callback_data=f'setgs#spell_check#{spell_s}#{grp_id}',
                 ),
             ],
             [
                 InlineKeyboardButton(
                     '𝚆𝙴𝙻𝙲𝙾𝙼𝙴',
-                    callback_data=f'setgs#welcome#{settings["welcome"]}#{grp_id}',
+                    callback_data=f'setgs#welcome#{wel_s}#{grp_id}',
                 ),
                 InlineKeyboardButton(
-                    '✅ 𝚈𝙴𝚂' if settings["welcome"] else '❌ 𝙽𝙾',
-                    callback_data=f'setgs#welcome#{settings["welcome"]}#{grp_id}',
+                    '✅ 𝚈𝙴𝚂' if wel_s else '❌ 𝙽𝙾',
+                    callback_data=f'setgs#welcome#{wel_s}#{grp_id}',
                 ),
             ],
         ]
