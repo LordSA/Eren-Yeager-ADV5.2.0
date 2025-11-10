@@ -4,6 +4,8 @@ import re
 import ast
 import math
 import random
+import uuid
+from cachetools import TTLCache
 from pyrogram.errors.exceptions.bad_request_400 import MediaEmpty, PhotoInvalidDimensions, WebpageMediaEmpty
 from Script import script
 import pyrogram
@@ -19,7 +21,7 @@ from database.users_chats_db import db
 from database.ia_filterdb import Media, get_file_details, get_search_results
 from database.filters_mdb import filters_db
 import logging
-
+FILE_ID_CACHE = TTLCache(maxsize=1000, ttl=3600)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
@@ -58,28 +60,33 @@ async def next_page(bot, query):
     if not files:
         return
     settings = await get_settings(query.message.chat.id)
-    if settings['button']:
-        btn = [
-            [
-                InlineKeyboardButton(
-                    text=f"© 『{get_size(file.file_size)}』 {file.file_name}", callback_data=f'files#{file.file_id}'
-                ),
-            ]
-            for file in files
-        ]
-    else:
-        btn = [
-            [
-                InlineKeyboardButton(
-                    text=f"© {file.file_name}", callback_data=f'files#{file.file_id}'
-                ),
-                InlineKeyboardButton(
-                    text=f"『{get_size(file.file_size)}』",
-                    callback_data=f'files#{file.file_id}',
-                ),
-            ]
-            for file in files
-        ]
+    pre = 'filep' if settings['file_secure'] else 'file'
+    btn = []
+    for file in files:
+        key = str(uuid.uuid4())[:8]
+        FILE_ID_CACHE[key] = file.file_id
+        if settings['button']:
+            btn.append(
+                [
+                    InlineKeyboardButton(
+                        text=f"© 『{get_size(file.file_size)}』 {file.file_name}", 
+                        callback_data=f'{pre}#{key}' # Use short key
+                    )
+                ]
+            )
+        else:
+            btn.append(
+                [
+                    InlineKeyboardButton(
+                        text=f"© {file.file_name}", 
+                        callback_data=f'{pre}#{key}' # Use short key
+                    ),
+                    InlineKeyboardButton(
+                        text=f"『{get_size(file.file_size)}』",
+                        callback_data=f'{pre}#{key}', # Use short key
+                    ),
+                ]
+            )
     btn.insert(0, 
         [
             InlineKeyboardButton(f'🎬 {search} 🎬', 'reqst11')
@@ -342,6 +349,10 @@ async def cb_handler(client: Client, query: CallbackQuery):
         ident, file_id = query.data.split("#")
         print(f"[DEBUG] File button clicked - ident: {ident}, file_id: {file_id}")
         
+        file_id = FILE_ID_CACHE.grt(key)
+        if not file_id:
+            await query.answer("This button has expired. Please send the request again.", show_alert=True)
+            return
         try:
             files_ = await get_file_details(file_id)
             print(f"[DEBUG] Files retrieved: {files_}")
@@ -1181,30 +1192,33 @@ async def auto_filter(client, msg, spoll=False):
     # --- 2. BUILDING BUTTONS ---
     try:
         print("[DEBUG] auto_filter: Building buttons...")
-        pre = 'filep' if settings.get('file_secure') else 'file' # Use .get()
-        if settings.get("button"): # Use .get()
-            btn = [
+        pre = 'filep' if settings['file_secure'] else 'file'
+        btn = []
+        for file in files:
+            key = str(uuid.uuid4())[:8]
+            FILE_ID_CACHE[key] = file.file_id
+            if settings["button"]:
+                btn.append(
                 [
                     InlineKeyboardButton(
-                        text=f"© 『{get_size(file.file_size)}』 {file.file_name}", callback_data=f'{pre}#{file.file_id}'
+                        text=f"© 『{get_size(file.file_size)}』 {file.file_name}", 
+                        callback_data=f'{pre}#{key}' # Use the short key
                     ),
                 ]
-                for file in files
-            ]
-        else:
-            btn = [
+            )
+            else:
+                btn.append(
                 [
                     InlineKeyboardButton(
                         text=f"© {file.file_name}",
-                        callback_data=f'{pre}#{file.file_id}',
+                        callback_data=f'{pre}#{key}', # Use the short key
                     ),
                     InlineKeyboardButton(
                         text=f"『{get_size(file.file_size)}』",
-                        callback_data=f'{pre}#{file.file_id}',
+                        callback_data=f'{pre}#{key}', # Use the short key
                     ),
                 ]
-                for file in files
-            ]
+            )
         
         btn.insert(0, [InlineKeyboardButton(f'🎬 {search} 🎬', 'reqst11')])
         btn.insert(1, [InlineKeyboardButton(f"『𝙵𝙸𝙻𝙴𝚂』", 'reqst11'), InlineKeyboardButton(f'『𝚃𝙸𝙿𝚂』', 'tips')])
