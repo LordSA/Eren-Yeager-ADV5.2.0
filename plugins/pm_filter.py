@@ -4,6 +4,8 @@ import re
 import ast
 import math
 import random
+import uuid
+from cachetools import TTLCache
 from pyrogram.errors.exceptions.bad_request_400 import MediaEmpty, PhotoInvalidDimensions, WebpageMediaEmpty
 from Script import script
 import pyrogram
@@ -19,9 +21,9 @@ from database.users_chats_db import db
 from database.ia_filterdb import Media, get_file_details, get_search_results
 from database.filters_mdb import filters_db
 import logging
-
+FILE_ID_CACHE = TTLCache(maxsize=1000, ttl=3600)
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.ERROR)
+logger.setLevel(logging.INFO)
 
 
 BUTTONS = {}
@@ -49,7 +51,7 @@ async def next_page(bot, query):
         await query.answer("You are using one of my old messages, please send the request again.(പഴയതു മാറ്റിപ്പിടി)", show_alert=True)
         return
 
-    files, n_offset, total = await get_search_results(search, offset=offset, filter=True)
+    files, n_offset, total = await get_search_results(search, offset=offset)
     try:
         n_offset = int(n_offset)
     except:
@@ -58,28 +60,33 @@ async def next_page(bot, query):
     if not files:
         return
     settings = await get_settings(query.message.chat.id)
-    if settings['button']:
-        btn = [
-            [
-                InlineKeyboardButton(
-                    text=f"© 『{get_size(file.file_size)}』 {file.file_name}", callback_data=f'files#{file.file_id}'
-                ),
-            ]
-            for file in files
-        ]
-    else:
-        btn = [
-            [
-                InlineKeyboardButton(
-                    text=f"© {file.file_name}", callback_data=f'files#{file.file_id}'
-                ),
-                InlineKeyboardButton(
-                    text=f"『{get_size(file.file_size)}』",
-                    callback_data=f'files#{file.file_id}',
-                ),
-            ]
-            for file in files
-        ]
+    pre = 'filep' if settings['file_secure'] else 'file'
+    btn = []
+    for file in files:
+        key = str(uuid.uuid4())[:8]
+        FILE_ID_CACHE[key] = file.file_id
+        if settings['button']:
+            btn.append(
+                [
+                    InlineKeyboardButton(
+                        text=f"© 『{get_size(file.file_size)}』 {file.file_name}", 
+                        callback_data=f'{pre}#{key}' # Use short key
+                    )
+                ]
+            )
+        else:
+            btn.append(
+                [
+                    InlineKeyboardButton(
+                        text=f"© {file.file_name}", 
+                        callback_data=f'{pre}#{key}' # Use short key
+                    ),
+                    InlineKeyboardButton(
+                        text=f"『{get_size(file.file_size)}』",
+                        callback_data=f'{pre}#{key}', # Use short key
+                    ),
+                ]
+            )
     btn.insert(0, 
         [
             InlineKeyboardButton(f'🎬 {search} 🎬', 'reqst11')
@@ -139,7 +146,7 @@ async def advantage_spoll_choker(bot, query):
     await query.answer('Checking for Movie in database...')
     k = await manual_filters(bot, query.message, text=movie)
     if k == False:
-        files, offset, total_results = await get_search_results(movie, offset=0, filter=True)
+        files, offset, total_results = await get_search_results(movie, offset=0)
         if files:
             k = (movie, files, offset, total_results)
             await auto_filter(bot, query, k)
@@ -340,73 +347,114 @@ async def cb_handler(client: Client, query: CallbackQuery):
             await query.answer(alert, show_alert=True)
     if query.data.startswith("file"):
         ident, file_id = query.data.split("#")
-        files_ = await get_file_details(file_id)
-        if not files_:
-            return await query.answer('No such file exist.')
-        title = files.file_name
-        size = get_size(files.file_size)
-        f_caption = files.caption
-        settings = await get_settings(query.message.chat.id)
-        if CUSTOM_FILE_CAPTION:
-            try:
-                f_caption = CUSTOM_FILE_CAPTION.format(file_name='' if title is None else title,
-                                                       file_size='' if size is None else size,
-                                                       file_caption='' if f_caption is None else f_caption)
-            except Exception as e:
-                logger.exception(e)
-            f_caption = f_caption
-        if f_caption is None:
-            f_caption = f"{files.file_name}"
-
+        logger.info(f"User {query.from_user.id} clicked file button. Ident: {ident}, Key: {key}")
+        print(f"[DEBUG] File button clicked - ident: {ident}, file_id: {file_id}")
+        
+        file_id = FILE_ID_CACHE.get(key)
+        if not file_id:
+            logger.warning(f"File key {key} not found in cache. Button may be expired.")
+            await query.answer("This button has expired. Please send the request again.", show_alert=True)
+            return
+        logger.info(f"Retrieved file_id {file_id} from cache for key {key}")
         try:
+            files_ = await get_file_details(file_id)
+            print(f"[DEBUG] Files retrieved: {files_}")
+            
+            if not files_:
+                logger.error(f"File_id {file_id} not found in database (get_file_details).")
+                return await query.answer('No such file exist.', show_alert=True)
+            
+            file = files_[0]
+            title = file.file_name
+            size = get_size(file.file_size)
+            f_caption = file.caption
+            logger.info(f"Attempting to check settings for chat {query.message.chat.id}")
+            settings = await get_settings(query.message.chat.id)
+            
+            if CUSTOM_FILE_CAPTION:
+                try:
+                    f_caption = CUSTOM_FILE_CAPTION.format(
+                        file_name='' if title is None else title,
+                        file_size='' if size is None else size,
+                        file_caption='' if f_caption is None else f_caption
+                    )
+                except Exception as e:
+                    logger.exception(e)
+            
+            if f_caption is None:
+                f_caption = f"{title}"
+
             if AUTH_CHANNEL and not await is_subscribed(client, query):
+                logger.info(f"User {query.from_user.id} not subscribed. Sending join link.")
                 await query.answer(url=f"https://t.me/{temp.U_NAME}?start={ident}_{file_id}")
                 return
             elif settings['botpm']:
+                logger.info(f"BotPM is True. Sending user to PM for file {file_id}.")
                 await query.answer(url=f"https://t.me/{temp.U_NAME}?start={ident}_{file_id}")
                 return
             else:
+                logger.info(f"BotPM is False. Attempting to send file {file_id} to user {query.from_user.id} in PM.")
                 await client.send_cached_media(
                     chat_id=query.from_user.id,
                     file_id=file_id,
                     caption=f_caption,
                     protect_content=True if ident == "filep" else False 
                 )
-                await query.answer(f'Hey {query.from_user.first_name} Check PM, I have sent files in pm(നിൻ്റെ pm നോക്ക് അതിൽ ഞാൻ ഇട്ടിട്ടുണ്ട്)', show_alert=True)
+                logger.info(f"Successfully sent file {file_id} to {query.from_user.id}.")
+                await query.answer(f'Hey {query.from_user.first_name} Check PM, I have sent files in pm', show_alert=True)
+                
         except UserIsBlocked:
-            await query.answer('Unblock the bot mahn!(പൊട്ട എന്നെ unblock ചെയ്യൂ)', show_alert=True)
+            logger.warning(f"Failed to send file {file_id}: User {query.from_user.id} has blocked the bot.")
+            await query.answer('Unblock the bot first!', show_alert=True)
         except PeerIdInvalid:
+            logger.warning(f"Failed to send file {file_id}: User {query.from_user.id} has not started the bot (PeerIdInvalid).")
             await query.answer(url=f"https://t.me/{temp.U_NAME}?start={ident}_{file_id}")
         except Exception as e:
+            logger.exception(e)
+            print(f"Error in file handler: {e}")
             await query.answer(url=f"https://t.me/{temp.U_NAME}?start={ident}_{file_id}")
+            
     elif query.data.startswith("checksub"):
         if AUTH_CHANNEL and not await is_subscribed(client, query):
-            await query.answer("I Like Your Smartness(വിളച്ചിൽ എടുകുന്നോ എന്നെ ചൂടാക്കാതെ പോയി സബ് ചെയ്യൂ🙄), But Don't Be Oversmart 😒", show_alert=True)
+            await query.answer("Join the channel first!", show_alert=True)
             return
+        
         ident, file_id = query.data.split("#")
-        files_ = await get_file_details(file_id)
-        if not files_:
-            return await query.answer('No such file exist.(അങ്ങനെ ഒരു സാധനവും ഇതിൽ ഇല്ല😑)')
-        title = files.file_name
-        size = get_size(files.file_size)
-        f_caption = files.caption
-        if CUSTOM_FILE_CAPTION:
-            try:
-                f_caption = CUSTOM_FILE_CAPTION.format(file_name='' if title is None else title,
-                                                       file_size='' if size is None else size,
-                                                       file_caption='' if f_caption is None else f_caption)
-            except Exception as e:
-                logger.exception(e)
-                f_caption = f_caption
-        if f_caption is None:
-            f_caption = f"{title}"
-        await query.answer()
-        await client.send_cached_media(
-            chat_id=query.from_user.id,
-            file_id=file_id,
-            caption=f_caption,
-            protect_content=True if ident == 'checksubp' else False
-        )
+        
+        try:
+            files_ = await get_file_details(file_id)
+            if not files_:
+                return await query.answer('No such file exist.', show_alert=True)
+            
+            file = files_[0]
+            title = file.file_name
+            size = get_size(file.file_size)
+            f_caption = file.caption
+            
+            if CUSTOM_FILE_CAPTION:
+                try:
+                    f_caption = CUSTOM_FILE_CAPTION.format(
+                        file_name='' if title is None else title,
+                        file_size='' if size is None else size,
+                        file_caption='' if f_caption is None else f_caption
+                    )
+                except Exception as e:
+                    logger.exception(e)
+            
+            if f_caption is None:
+                f_caption = f"{title}"
+            
+            await query.answer()
+            await client.send_cached_media(
+                chat_id=query.from_user.id,
+                file_id=file_id,
+                caption=f_caption,
+                protect_content=True if ident == 'checksubp' else False
+            )
+        except Exception as e:
+            logger.exception(e)
+            print(f"Error in checksub: {e}")
+            await query.answer('An error occurred!', show_alert=True)
     elif query.data == "pages":
         await query.answer()
     elif query.data == "start":
@@ -1057,181 +1105,262 @@ async def cb_handler(client: Client, query: CallbackQuery):
             parse_mode=enums.ParseMode.HTML
         )
     elif query.data.startswith("setgs"):
-        ident, set_type, status, grp_id = query.data.split("#")
-        grpid = await active_connection(str(query.from_user.id))
+        try:
+            ident, set_type, status, grp_id = query.data.split("#")
+            grpid = int(grp_id)
+        except ValueError as e:
+            logger.error(f"Error splitting callback data: {e}")
+            return await query.answer("Error: Invalid button data.", show_alert=True)
+        try:
+            member = await client.get_chat_member(grp_id, query.from_user.id)
+            if member.status not in [enums.ChatMemberStatus.ADMINISTRATOR, enums.ChatMemberStatus.OWNER]:
+                return await query.answer("You must be an Admin to change settings.", show_alert=True)
+        except Exception as e:
+            logger.error(f"Error checking admin status: {e}")
+            return await query.answer("I can't check your permissions in that group.", show_alert=True)
 
-        if str(grp_id) != str(grpid):
-            await query.message.edit("Your Active Connection Has Been Changed. Go To /settings.")
-            return await query.answer('Piracy Is Crime')
+        new_status = False if status == "True" else True
+        await save_group_settings(grp_id, set_type, new_status)
+        settings = await get_settings(grp_id)
 
-        if status == "True":
-            await save_group_settings(grpid, set_type, False)
-        else:
-            await save_group_settings(grpid, set_type, True)
-
-        settings = await get_settings(grpid)
-
-        if settings is not None:
+        try:
             buttons = [
                 [
                     InlineKeyboardButton('『𝙵𝙸𝙻𝚃𝙴𝚁 𝙱𝚄𝚃𝚃𝙾𝙽』',
-                                         callback_data=f'setgs#button#{settings["button"]}#{str(grp_id)}'),
-                    InlineKeyboardButton('𝚂𝙸𝙽𝙶𝙻𝙴' if settings["button"] else '𝙳𝙾𝚄𝙱𝙻𝙴',
-                                         callback_data=f'setgs#button#{settings["button"]}#{str(grp_id)}')
+                                         callback_data=f'setgs#button#{settings.get("button", False)}#{str(grp_id)}'),
+                    InlineKeyboardButton('𝚂𝙸𝙽𝙶𝙻𝙴' if settings.get("button", False) else '𝙳𝙾𝚄𝙱𝙻𝙴',
+                                         callback_data=f'setgs#button#{settings.get("button", False)}#{str(grp_id)}')
                 ],
                 [
-                    InlineKeyboardButton('『𝙱𝙾𝚃 𝙿𝙼』', callback_data=f'setgs#botpm#{settings["botpm"]}#{str(grp_id)}'),
-                    InlineKeyboardButton('✅ 𝚈𝙴𝚂' if settings["botpm"] else '❌ 𝙽𝙾',
-                                         callback_data=f'setgs#botpm#{settings["botpm"]}#{str(grp_id)}')
+                    InlineKeyboardButton('『𝙱𝙾𝚃 𝙿𝙼』', callback_data=f'setgs#botpm#{settings.get("botpm", False)}#{str(grp_id)}'),
+                    InlineKeyboardButton('✅ 𝚈𝙴𝚂' if settings.get("botpm", False) else '❌ 𝙽𝙾',
+                                         callback_data=f'setgs#botpm#{settings.get("botpm", False)}#{str(grp_id)}')
                 ],
                 [
                     InlineKeyboardButton('『𝙵𝙸𝙻𝙴 𝚂𝙴𝙲𝚄𝚁𝙴』',
-                                         callback_data=f'setgs#file_secure#{settings["file_secure"]}#{str(grp_id)}'),
-                    InlineKeyboardButton('✅ 𝚈𝙴𝚂' if settings["file_secure"] else '❌ 𝙽𝙾',
-                                         callback_data=f'setgs#file_secure#{settings["file_secure"]}#{str(grp_id)}')
+                                         callback_data=f'setgs#file_secure#{settings.get("file_secure", False)}#{str(grp_id)}'),
+                    InlineKeyboardButton('✅ 𝚈𝙴𝚂' if settings.get("file_secure", False) else '❌ 𝙽𝙾',
+                                         callback_data=f'setgs#file_secure#{settings.get("file_secure", False)}#{str(grp_id)}')
                 ],
                 [
-                    InlineKeyboardButton('『𝙸𝙼𝙳𝙱』', callback_data=f'setgs#imdb#{settings["imdb"]}#{str(grp_id)}'),
-                    InlineKeyboardButton('✅ 𝚈𝙴𝚂' if settings["imdb"] else '❌ 𝙽𝙾',
-                                         callback_data=f'setgs#imdb#{settings["imdb"]}#{str(grp_id)}')
+                    InlineKeyboardButton('『𝙸𝙼𝙳𝙱』', callback_data=f'setgs#imdb#{settings.get("imdb", False)}#{str(grp_id)}'),
+                    InlineKeyboardButton('✅ 𝚈𝙴𝚂' if settings.get("imdb", False) else '❌ 𝙽𝙾',
+                                         callback_data=f'setgs#imdb#{settings.get("imdb", False)}#{str(grp_id)}')
                 ],
                 [
                     InlineKeyboardButton('『𝚂𝙿𝙴𝙻𝙻 𝙲𝙷𝙴𝙲𝙺』',
-                                         callback_data=f'setgs#spell_check#{settings["spell_check"]}#{str(grp_id)}'),
-                    InlineKeyboardButton('✅ 𝚈𝙴𝚂' if settings["spell_check"] else '❌ 𝙽𝙾',
-                                         callback_data=f'setgs#spell_check#{settings["spell_check"]}#{str(grp_id)}')
+                                         callback_data=f'setgs#spell_check#{settings.get("spell_check", False)}#{str(grp_id)}'),
+                    InlineKeyboardButton('✅ 𝚈𝙴𝚂' if settings.get("spell_check", False) else '❌ 𝙽𝙾',
+                                         callback_data=f'setgs#spell_check#{settings.get("spell_check", False)}#{str(grp_id)}')
                 ],
                 [
-                    InlineKeyboardButton('『𝚆𝙴𝙻𝙲𝙾𝙼𝙴 𝚂𝙿𝙴𝙴𝙲𝙷』', callback_data=f'setgs#welcome#{settings["welcome"]}#{str(grp_id)}'),
-                    InlineKeyboardButton('✅ 𝚈𝙴𝚂' if settings["welcome"] else '❌ 𝙽𝙾',
-                                         callback_data=f'setgs#welcome#{settings["welcome"]}#{str(grp_id)}')
+                    InlineKeyboardButton('『𝚆𝙴𝙻𝙲𝙾𝙼𝙴 𝚂𝙿𝙴𝙴𝙲𝙷』', callback_data=f'setgs#welcome#{settings.get("welcome", False)}#{str(grp_id)}'),
+                    InlineKeyboardButton('✅ 𝚈𝙴𝚂' if settings.get("welcome", False) else '❌ 𝙽𝙾',
+                                         callback_data=f'setgs#welcome#{settings.get("welcome", False)}#{str(grp_id)}')
                 ]
             ]
             reply_markup = InlineKeyboardMarkup(buttons)
             await query.message.edit_reply_markup(reply_markup)
-    await query.answer('Piracy Is Crime')
+            await query.answer(f"{set_type.replace('_', ' ').upper()} set to {new_status}")
+    #await query.answer('Piracy Is Crime')
+        except MessageNotModified:
+            await query.answer("Setting already changed.")
+        except Exception as e:
+            logger.error(f"Error rebuilding settings menu: {e}")
+            await query.answer("Setting saved, but couldn't update menu.")
 
+# A more robust auto_filter with debugging and error handling
 async def auto_filter(client, msg, spoll=False):
+    # --- 1. GETTING SETTINGS AND FILES ---
     if not spoll:
         message = msg
-        settings = await get_settings(msg.chat.id)
-        if message.text.startswith("/"): return  # ignore commands
+        try:
+            settings = await get_settings(msg.chat.id)
+        except Exception as e:
+            logger.error(f"Failed to get settings: {e}")
+            return  # Can't continue without settings
+
+        if message.text.startswith("/"): return 
         if re.findall("((^\/|^,|^!|^\.|^[\U0001F600-\U000E007F]).*)", message.text):
             return
+        
         if 2 < len(message.text) < 100:
             search = message.text
-            files, offset, total_results = await get_search_results(search.lower(), offset=0, filter=True)
+            try:
+                files, offset, total_results = await get_search_results(search.lower(), offset=0)
+            except Exception as e:
+                logger.error(f"Failed at get_search_results: {e}")
+                return
+                
             if not files:
-                if settings["spell_check"]:
+                if settings.get("spell_check"): # Use .get() for safety
                     return await advantage_spell_chok(msg)
                 else:
                     return
         else:
             return
     else:
-        settings = await get_settings(msg.chat.id)
-        message = msg.message.reply_to_message  # msg will be callback query
-        search, files, offset, total_results = spoll
-    pre = 'filep' if settings['file_secure'] else 'file'
-    if settings["button"]:
-        btn = [
-            [
-                InlineKeyboardButton(
-                    text=f"© 『{get_size(file.file_size)}』 {file.file_name}", callback_data=f'{pre}#{file.file_id}'
-                ),
-            ]
-            for file in files
-        ]
-    else:
-        btn = [
-            [
-                InlineKeyboardButton(
-                    text=f"© {file.file_name}",
-                    callback_data=f'{pre}#{file.file_id}',
-                ),
-                InlineKeyboardButton(
-                    text=f"『{get_size(file.file_size)}』",
-                    callback_data=f'{pre}#{file.file_id}',
-                ),
-            ]
-            for file in files
-        ]
-    btn.insert(0, 
-        [
-            InlineKeyboardButton(f'🎬 {search} 🎬', 'reqst11')
-        ]
-    )
-    btn.insert(1,
-        [
-            InlineKeyboardButton(f"『𝙵𝙸𝙻𝙴𝚂』", 'reqst11'),
-            InlineKeyboardButton(f'『𝚃𝙸𝙿𝚂』', 'tips')
-        ]
-    )
-        
-    if offset != "":
-        key = f"{message.chat.id}-{message.id}"
-        BUTTONS[key] = search
-        req = message.from_user.id if message.from_user else 0
-        btn.append(
-            [InlineKeyboardButton(text=f"📃 1/{math.ceil(int(total_results) / 10)}", callback_data="pages"),
-             InlineKeyboardButton(text="『𝙽𝙴𝚇𝚃』", callback_data=f"next_{req}_{key}_{offset}")]
-        )
-    else:
-        btn.append(
-            [InlineKeyboardButton(text="📃 1/1", callback_data="pages")]
-        )
-    imdb = await get_poster(search, file=(files[0]).file_name) if settings["imdb"] else None
-    TEMPLATE = settings['template']
-    if imdb:
-        cap = TEMPLATE.format(
-            query=search,
-            title=imdb['title'],
-            votes=imdb['votes'],
-            aka=imdb["aka"],
-            seasons=imdb["seasons"],
-            box_office=imdb['box_office'],
-            localized_title=imdb['localized_title'],
-            kind=imdb['kind'],
-            imdb_id=imdb["imdb_id"],
-            cast=imdb["cast"],
-            runtime=imdb["runtime"],
-            countries=imdb["countries"],
-            certificates=imdb["certificates"],
-            languages=imdb["languages"],
-            director=imdb["director"],
-            writer=imdb["writer"],
-            producer=imdb["producer"],
-            composer=imdb["composer"],
-            cinematographer=imdb["cinematographer"],
-            music_team=imdb["music_team"],
-            distributors=imdb["distributors"],
-            release_date=imdb['release_date'],
-            year=imdb['year'],
-            genres=imdb['genres'],
-            poster=imdb['poster'],
-            plot=imdb['plot'],
-            rating=imdb['rating'],
-            url=imdb['url'],
-            **locals()
-        )
-    else:
-        cap = f"Here is what i found for your query {search}"
-    if imdb and imdb.get('poster'):
         try:
-            await message.reply_photo(photo=imdb.get('poster'), caption=cap[:1024],
-                                      reply_markup=InlineKeyboardMarkup(btn))
-        except (MediaEmpty, PhotoInvalidDimensions, WebpageMediaEmpty):
-            pic = imdb.get('poster')
-            poster = pic.replace('.jpg', "._V1_UX360.jpg")
-            await message.reply_photo(photo=poster, caption=cap[:1024], reply_markup=InlineKeyboardMarkup(btn))
+            settings = await get_settings(msg.chat.id)
         except Exception as e:
-            logger.exception(e)
-            await message.reply_text(cap, reply_markup=InlineKeyboardMarkup(btn))
-    else:
-        await message.reply_text(cap, reply_markup=InlineKeyboardMarkup(btn))
-    if spoll:
-        await msg.message.delete()
+            logger.error(f"Failed to get settings (spoll): {e}")
+            return
+        message = msg.message.reply_to_message 
+        search, files, offset, total_results = spoll
+    
+    print(f"[DEBUG] auto_filter: Found {len(files)} files for '{search}'. Starting reply process.")
 
+    # --- 2. BUILDING BUTTONS ---
+    try:
+        print("[DEBUG] auto_filter: Building buttons...")
+        pre = 'filep' if settings['file_secure'] else 'file'
+        btn = []
+        for file in files:
+            key = str(uuid.uuid4())[:8]
+            FILE_ID_CACHE[key] = file.file_id
+            if settings.get("button", False):
+                btn.append(
+                [
+                    InlineKeyboardButton(
+                        text=f"© 『{get_size(file.file_size)}』 {file.file_name}", 
+                        callback_data=f'{pre}#{key}' # Use the short key
+                    ),
+                ]
+            )
+            else:
+                btn.append(
+                [
+                    InlineKeyboardButton(
+                        text=f"© {file.file_name}",
+                        callback_data=f'{pre}#{key}', # Use the short key
+                    ),
+                    InlineKeyboardButton(
+                        text=f"『{get_size(file.file_size)}』",
+                        callback_data=f'{pre}#{key}', # Use the short key
+                    ),
+                ]
+            )
+        
+        btn.insert(0, [InlineKeyboardButton(f'🎬 {search} 🎬', 'reqst11')])
+        btn.insert(1, [InlineKeyboardButton(f"『𝙵𝙸𝙻𝙴𝚂』", 'reqst11'), InlineKeyboardButton(f'『𝚃𝙸𝙿𝚂』', 'tips')])
+            
+        if offset != "":
+            key = f"{message.chat.id}-{message.id}"
+            BUTTONS[key] = search
+            req = message.from_user.id if message.from_user else 0
+            btn.append(
+                [InlineKeyboardButton(text=f"📃 1/{math.ceil(int(total_results) / 10)}", callback_data="pages"),
+                 InlineKeyboardButton(text="『𝙽𝙴𝚇𝚃』", callback_data=f"next_{req}_{key}_{offset}")]
+            )
+        else:
+            btn.append(
+                [InlineKeyboardButton(text="📃 1/1", callback_data="pages")]
+            )
+        print("[DEBUG] auto_filter: Button build complete.")
+        
+    except Exception as e:
+        logger.exception(f"CRITICAL ERROR in auto_filter: Failed during BUTTON building: {e}")
+        print(f"[DEBUG] auto_filter: FAILED at button building: {e}")
+        return # Can't continue if buttons fail
+
+    # --- 3. GETTING IMDB DATA AND FORMATTING CAPTION ---
+    try:
+        print("[DEBUG] auto_filter: Getting IMDB data...")
+        # Use .get() for safe access to settings
+        imdb = await get_poster(search, file=(files[0]).file_name) if settings.get("imdb") else None 
+        print(f"[DEBUG] IMDB Result was: {imdb}")
+        TEMPLATE = settings.get('template') 
+        
+        if not TEMPLATE:
+            print("[DEBUG] auto_filter: No template found in settings! Using default.")
+            TEMPLATE = "Here is what i found for your query {query}" # Default fallback
+
+        if imdb:
+            print("[DEBUG] auto_filter: IMDB data found. Formatting template.")
+            # Use .get() for ALL keys to prevent crashing if a key is missing
+            cap = TEMPLATE.format(
+                query=search,
+                title=imdb.get('title', 'N/A'),
+                votes=imdb.get('votes', 'N/A'),
+                aka=imdb.get("aka", 'N/A'),
+                seasons=imdb.get("seasons", 'N/A'),
+                box_office=imdb.get('box_office', 'N/A'),
+                localized_title=imdb.get('localized_title', 'N/A'),
+                kind=imdb.get('kind', 'N/A'),
+                imdb_id=imdb.get("imdb_id", 'N/A'),
+                cast=imdb.get("cast", 'N/A'),
+                runtime=imdb.get("runtime", 'N/A'),
+                countries=imdb.get("countries", 'N/A'),
+                certificates=imdb.get("certificates", 'N/A'),
+                languages=imdb.get("languages", 'N/A'),
+                director=imdb.get("director", 'N/A'),
+                writer=imdb.get("writer", 'N/A'),
+                producer=imdb.get("producer", 'N/A'),
+                composer=imdb.get("composer", 'N/A'),
+                cinematographer=imdb.get("cinematographer", 'N/A'),
+                music_team=imdb.get("music_team", 'N/A'),
+                distributors=imdb.get("distributors", 'N/A'),
+                release_date=imdb.get('release_date', 'N/A'),
+                year=imdb.get('year', 'N/A'),
+                genres=imdb.get('genres', 'N/A'),
+                poster=imdb.get('poster'), # .get('poster') is fine, it will be None if missing
+                plot=imdb.get('plot', 'N/A'),
+                rating=imdb.get('rating', 'N/A'),
+                url=imdb.get('url', 'N/A'),
+                **locals()
+            )
+        else:
+            print("[DEBUG] auto_filter: No IMDB data. Using simple caption.")
+            # This is a safe fallback in case the template ONLY has {query}
+            try:
+                cap = TEMPLATE.format(query=search, **locals())
+            except KeyError:
+                cap = f"Here is what i found for your query {search}"
+
+        print("[DEBUG] auto_filter: Caption formatted successfully.")
+        
+    except Exception as e:
+        logger.exception(f"CRITICAL ERROR in auto_filter: Failed during IMDB/Caption formatting: {e}")
+        print(f"[DEBUG] auto_filter: FAILED at IMDB/Caption: {e}")
+        # FALLBACK: Send a simple message if IMDB/Template fails
+        try:
+            await message.reply_text(
+                f"Here is what I found for your query `{search}`.\n\n_(An error occurred while fetching full details.)_",
+                reply_markup=InlineKeyboardMarkup(btn) # btn was built in the first try block
+            )
+        except Exception as fallback_e:
+            logger.error(f"Failed to send fallback message: {fallback_e}")
+        return # Stop execution
+
+    # --- 4. SENDING THE REPLY ---
+    try:
+        print("[DEBUG] auto_filter: Attempting to send reply...")
+        if imdb and imdb.get('poster'):
+            print("[DEBUG] auto_filter: Sending with photo...")
+            try:
+                await message.reply_photo(photo=imdb.get('poster'), caption=cap[:1000],
+                                          reply_markup=InlineKeyboardMarkup(btn))
+            except (MediaEmpty, PhotoInvalidDimensions, WebpageMediaEmpty):
+                print("[DEBUG] auto_filter: Photo failed, trying smaller poster.")
+                pic = imdb.get('poster')
+                poster = pic.replace('.jpg', "._V1_UX360.jpg") # Fixed your typo here
+                await message.reply_photo(photo=poster, caption=cap[:1000], reply_markup=InlineKeyboardMarkup(btn))
+            except Exception as e:
+                logger.warning(f"Sending photo failed ({e}), sending as text.")
+                print(f"[DEBUG] auto_filter: Photo failed ({e}), sending text.")
+                await message.reply_text(cap, reply_markup=InlineKeyboardMarkup(btn))
+        else:
+            print("[DEBUG] auto_filter: Sending as text (no poster)...")
+            await message.reply_text(cap, reply_markup=InlineKeyboardMarkup(btn))
+            
+        print("[DEBUG] auto_filter: Reply sent successfully.")
+        
+        if spoll:
+            await msg.message.delete()
+            
+    except Exception as e:
+        logger.exception(f"CRITICAL ERROR in auto_filter: Failed to send reply: {e}")
+        print(f"[DEBUG] auto_filter: FAILED at sending reply: {e}")
 
 async def advantage_spell_chok(msg):
     query = re.sub(
@@ -1333,8 +1462,10 @@ async def manual_filters(client, message, text=False):
                             reply_markup=InlineKeyboardMarkup(button),
                             reply_to_message_id=reply_id
                         )
+                    return True
                 except Exception as e:
                     logger.exception(e)
-                break
-    else:
-        return False
+                    return False
+            else:
+                return False
+    return False

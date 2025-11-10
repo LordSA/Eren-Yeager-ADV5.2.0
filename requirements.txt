@@ -19,6 +19,7 @@ imdbpy==2021.4.18
 countryinfo
 telegraph==2.1.0
 httpx
+cachetools
 
 # Multimedia
 ffmpeg-python

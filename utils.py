@@ -24,12 +24,22 @@ BTN_URL_REGEX = re.compile(
     r"(\[([^\[]+?)\]\((buttonurl|buttonalert):(?:/{0,2})(.+?)(:same)?\))"
 )
 
-imdb = IMDb() 
+imdb = IMDb()
 
 BANNED = {}
 SMART_OPEN = '“'
 SMART_CLOSE = '”'
 START_CHAR = ('\'', '"', SMART_OPEN)
+
+DEFAULT_SETTINGS = {
+    'button': True,
+    'botpm': True,
+    'file_secure': False,
+    'imdb': True,  # Set your desired default here
+    'spell_check': True,
+    'welcome': True,
+    'template': "Here is what i found for your query {query}" # A default template
+}
 
 # temp db for banned 
 class temp(object):
@@ -188,21 +198,23 @@ async def get_settings(group_id):
     It correctly uses the async db object.
     """
     settings = temp.SETTINGS.get(group_id)
-    if not settings:
-        settings = await db.get_settings(group_id)
+    if settings is None:
+        settings = DEFAULT_SETTINGS.copy()
+        db_settings = await db.get_settings(group_id)
+        if db_settings is not None:
+            settings.update(db_settings)
         temp.SETTINGS[group_id] = settings
     return settings
     
 async def save_group_settings(group_id, key, value):
-    """
-    This function is also perfect!
-    It correctly uses the async db object.
-    """
     current = await get_settings(group_id)
     current[key] = value
     temp.SETTINGS[group_id] = current
-    await db.update_settings(group_id, current)
-    
+    try:
+        await db.update_settings(group_id, current)
+    except Exception as e:
+        logger.error(f"CRITICAL: FAILED TO SAVE SETTINGS TO DATABASE: {e}")
+        
 def get_size(size):
     """Get size in readable format"""
 

@@ -11,6 +11,7 @@ logging.config.fileConfig('logging.conf')
 logging.getLogger().setLevel(logging.INFO)
 logging.getLogger("pyrogram").setLevel(logging.ERROR)
 logging.getLogger("imdbpy").setLevel(logging.ERROR)
+logger = logging.getLogger(__name__)
 
 from pyrogram import Client, __version__
 from pyrogram.raw.all import layer
@@ -21,6 +22,15 @@ from info import SESSION, API_ID, API_HASH, BOT_TOKEN, LOG_STR
 from utils import temp
 from typing import Union, Optional, AsyncGenerator
 from pyrogram import types
+
+async def run_shell_command(command: str) -> (str, str):
+    process = await asyncio.create_subprocess_shell(
+        command,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE
+    )
+    stdout, stderr = await process.communicate()
+    return stdout.decode().strip(), stderr.decode().strip()
 
 class Bot(Client):
 
@@ -55,10 +65,10 @@ class Bot(Client):
         logging.info("Bot stopped. Bye.")
     
 app = Bot()
-OWNER_ID = ADMINS
+#OWNER_ID = ADMINS
 
 # ---------------- CHECK UPDATE ----------------
-@app.on_message(filters.command("checkupdate") & filters.user(OWNER_ID))
+@app.on_message(filters.command("checkupdate") & filters.user(ADMINS))
 async def check_update(client: Client, message: Message):
     owner = message.from_user.id
     await client.send_message(owner, "🔍 Checking for updates...")
@@ -72,7 +82,7 @@ async def check_update(client: Client, message: Message):
         await client.send_message(LOG_CHANNEL, f"📦 Update check logs:\n<code>{git_output}</code>")
 
 # ---------------- UPDATE BOT ----------------
-@app.on_message(filters.command("update") & filters.user(OWNER_ID))
+@app.on_message(filters.command("update") & filters.user(ADMINS))
 async def update_bot(client: Client, message: Message):
     owner = message.from_user.id
 
@@ -81,17 +91,19 @@ async def update_bot(client: Client, message: Message):
 
     await client.send_message(owner, "🚀 Update started...")
 
-    git_pull = subprocess.run(["git", "pull"], capture_output=True, text=True)
-    git_output = git_pull.stdout + git_pull.stderr
+    stdout, stderr = await run_shell_command("git pull")
+    git_output = stdout + "\n" + stderr
 
     if "Already up to date." in git_output:
         await client.send_message(owner, "✅ Bot is already up-to-date.")
         return
 
     await client.send_message(LOG_CHANNEL, f"📦 Git Pull Logs:\n<code>{git_output}</code>")
+    await client.send_message(LOG_CHANNEL, "✅ `git pull` complete.\n\n2. Installing requirements...")
 
-    pip_install = subprocess.run(["pip", "install", "-r", "requirements.txt"], capture_output=True, text=True)
-    pip_output = pip_install.stdout + pip_install.stderr
+    pip_command = f"{sys.executable} -m pip install -r requirements.txt"
+    stdout_pip, stderr_pip = await run_shell_command(pip_command)
+    pip_output = stdout_pip + "\n" + stderr_pip
 
     await client.send_message(LOG_CHANNEL, f"📦 Pip Install Logs:\n<code>{pip_output}</code>")
 
@@ -99,6 +111,6 @@ async def update_bot(client: Client, message: Message):
 
     await asyncio.sleep(2)
 
-    subprocess.run(["pm2", "restart", PM2_BOT_NAME])
+    await run_shell_command(f"pm2 restart {PM2_BOT_NAME}")
 
 app.run()
