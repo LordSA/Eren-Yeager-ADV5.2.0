@@ -49,7 +49,7 @@ async def next_page(bot, query):
         await query.answer("You are using one of my old messages, please send the request again.(പഴയതു മാറ്റിപ്പിടി)", show_alert=True)
         return
 
-    files, n_offset, total = await get_search_results(search, offset=offset, filter=True)
+    files, n_offset, total = await get_search_results(search, offset=offset)
     try:
         n_offset = int(n_offset)
     except:
@@ -139,7 +139,7 @@ async def advantage_spoll_choker(bot, query):
     await query.answer('Checking for Movie in database...')
     k = await manual_filters(bot, query.message, text=movie)
     if k == False:
-        files, offset, total_results = await get_search_results(movie, offset=0, filter=True)
+        files, offset, total_results = await get_search_results(movie, offset=0)
         if files:
             k = (movie, files, offset, total_results)
             await auto_filter(bot, query, k)
