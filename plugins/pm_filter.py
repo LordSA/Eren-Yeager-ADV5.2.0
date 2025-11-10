@@ -21,7 +21,7 @@ from database.filters_mdb import filters_db
 import logging
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.ERROR)
+logger.setLevel(logging.INFO)
 
 
 BUTTONS = {}
@@ -340,10 +340,14 @@ async def cb_handler(client: Client, query: CallbackQuery):
             await query.answer(alert, show_alert=True)
     if query.data.startswith("file"):
         ident, file_id = query.data.split("#")
-        files_ = await get_file_details(file_id)
-        if not files_:
-            return await query.answer('No such file exist.')
-        files = files_[0] if isinstance(files_, list) else files_
+        print(f"[DEBUG] File button clicked - ident: {ident}, file_id: {file_id}")
+        
+        try:
+            files_ = await get_file_details(file_id)
+            print(f"[DEBUG] Files retrieved: {files_}")
+            if not files_:
+                return await query.answer('No such file exist.', show_alert=True)
+        files = files_[0]
         title = files.file_name
         size = get_size(files.file_size)
         f_caption = files.caption
@@ -385,10 +389,13 @@ async def cb_handler(client: Client, query: CallbackQuery):
             await query.answer("I Like Your Smartness(വിളച്ചിൽ എടുകുന്നോ എന്നെ ചൂടാക്കാതെ പോയി സബ് ചെയ്യൂ🙄), But Don't Be Oversmart 😒", show_alert=True)
             return
         ident, file_id = query.data.split("#")
-        files_ = await get_file_details(file_id)
-        if not files_:
-            return await query.answer('No such file exist.(അങ്ങനെ ഒരു സാധനവും ഇതിൽ ഇല്ല😑)')
-        files = files_[0] if isinstance(files_, list) else files_
+        try:
+            files_ = await get_file_details(file_id)
+            if not files_:
+                return await query.answer('No such file exist.(അങ്ങനെ ഒരു സാധനവും ഇതിൽ ഇല്ല😑)',show_alert=True)
+        
+        files = files_[0]
+
         title = files.file_name
         size = get_size(files.file_size)
         f_caption = files.caption
