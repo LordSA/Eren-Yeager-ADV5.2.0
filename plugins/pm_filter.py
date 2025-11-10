@@ -347,23 +347,28 @@ async def cb_handler(client: Client, query: CallbackQuery):
             await query.answer(alert, show_alert=True)
     if query.data.startswith("file"):
         ident, file_id = query.data.split("#")
+        logger.info(f"User {query.from_user.id} clicked file button. Ident: {ident}, Key: {key}")
         print(f"[DEBUG] File button clicked - ident: {ident}, file_id: {file_id}")
         
-        file_id = FILE_ID_CACHE.grt(key)
+        file_id = FILE_ID_CACHE.get(key)
         if not file_id:
+            logger.warning(f"File key {key} not found in cache. Button may be expired.")
             await query.answer("This button has expired. Please send the request again.", show_alert=True)
             return
+        logger.info(f"Retrieved file_id {file_id} from cache for key {key}")
         try:
             files_ = await get_file_details(file_id)
             print(f"[DEBUG] Files retrieved: {files_}")
             
             if not files_:
+                logger.error(f"File_id {file_id} not found in database (get_file_details).")
                 return await query.answer('No such file exist.', show_alert=True)
             
             file = files_[0]
             title = file.file_name
             size = get_size(file.file_size)
             f_caption = file.caption
+            logger.info(f"Attempting to check settings for chat {query.message.chat.id}")
             settings = await get_settings(query.message.chat.id)
             
             if CUSTOM_FILE_CAPTION:
@@ -380,23 +385,29 @@ async def cb_handler(client: Client, query: CallbackQuery):
                 f_caption = f"{title}"
 
             if AUTH_CHANNEL and not await is_subscribed(client, query):
+                logger.info(f"User {query.from_user.id} not subscribed. Sending join link.")
                 await query.answer(url=f"https://t.me/{temp.U_NAME}?start={ident}_{file_id}")
                 return
             elif settings['botpm']:
+                logger.info(f"BotPM is True. Sending user to PM for file {file_id}.")
                 await query.answer(url=f"https://t.me/{temp.U_NAME}?start={ident}_{file_id}")
                 return
             else:
+                logger.info(f"BotPM is False. Attempting to send file {file_id} to user {query.from_user.id} in PM.")
                 await client.send_cached_media(
                     chat_id=query.from_user.id,
                     file_id=file_id,
                     caption=f_caption,
                     protect_content=True if ident == "filep" else False 
                 )
+                logger.info(f"Successfully sent file {file_id} to {query.from_user.id}.")
                 await query.answer(f'Hey {query.from_user.first_name} Check PM, I have sent files in pm', show_alert=True)
                 
         except UserIsBlocked:
+            logger.warning(f"Failed to send file {file_id}: User {query.from_user.id} has blocked the bot.")
             await query.answer('Unblock the bot first!', show_alert=True)
         except PeerIdInvalid:
+            logger.warning(f"Failed to send file {file_id}: User {query.from_user.id} has not started the bot (PeerIdInvalid).")
             await query.answer(url=f"https://t.me/{temp.U_NAME}?start={ident}_{file_id}")
         except Exception as e:
             logger.exception(e)
@@ -1111,7 +1122,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
         new_status = False if status == "True" else True
         await save_group_settings(grp_id, set_type, new_status)
         settings = await get_settings(grp_id)
-        
+
         try:
             buttons = [
                 [
