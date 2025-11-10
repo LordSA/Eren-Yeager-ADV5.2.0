@@ -24,7 +24,7 @@ BTN_URL_REGEX = re.compile(
     r"(\[([^\[]+?)\]\((buttonurl|buttonalert):(?:/{0,2})(.+?)(:same)?\))"
 )
 
-imdb = IMDb(proxy='http://123.45.67.89:8080') #proxy allathe thalkalam vere hope illa imdb is blocking me
+imdb = IMDb(proxy='http://47.252.29.28:11222') #proxy allathe thalkalam vere hope illa imdb is blocking me
 
 BANNED = {}
 SMART_OPEN = '“'
