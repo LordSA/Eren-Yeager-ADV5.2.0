@@ -1247,6 +1247,7 @@ async def auto_filter(client, msg, spoll=False):
         print("[DEBUG] auto_filter: Getting IMDB data...")
         # Use .get() for safe access to settings
         imdb = await get_poster(search, file=(files[0]).file_name) if settings.get("imdb") else None 
+        print(f"[DEBUG] IMDB Result was: {imdb}")
         TEMPLATE = settings.get('template') 
         
         if not TEMPLATE:
