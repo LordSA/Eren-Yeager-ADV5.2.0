@@ -1101,9 +1101,9 @@ async def cb_handler(client: Client, query: CallbackQuery):
             logger.error(f"Error splitting callback data: {e}")
             return await query.answer("Error: Invalid button data.", show_alert=True)
         try:
-        member = await client.get_chat_member(grp_id, query.from_user.id)
-        if member.status not in [enums.ChatMemberStatus.ADMINISTRATOR, enums.ChatMemberStatus.OWNER]:
-            return await query.answer("You must be an Admin to change settings.", show_alert=True)
+            member = await client.get_chat_member(grp_id, query.from_user.id)
+            if member.status not in [enums.ChatMemberStatus.ADMINISTRATOR, enums.ChatMemberStatus.OWNER]:
+                return await query.answer("You must be an Admin to change settings.", show_alert=True)
         except Exception as e:
             logger.error(f"Error checking admin status: {e}")
             return await query.answer("I can't check your permissions in that group.", show_alert=True)
@@ -1111,6 +1111,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
         new_status = False if status == "True" else True
         await save_group_settings(grp_id, set_type, new_status)
         settings = await get_settings(grp_id)
+        
         try:
             buttons = [
                 [
