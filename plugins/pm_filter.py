@@ -1094,59 +1094,68 @@ async def cb_handler(client: Client, query: CallbackQuery):
             parse_mode=enums.ParseMode.HTML
         )
     elif query.data.startswith("setgs"):
-        ident, set_type, status, grp_id = query.data.split("#")
-        grpid = await active_connection(str(query.from_user.id))
+        try:
+            ident, set_type, status, grp_id = query.data.split("#")
+            grpid = int(grp_id)
+        except ValueError as e:
+            logger.error(f"Error splitting callback data: {e}")
+            return await query.answer("Error: Invalid button data.", show_alert=True)
+        try:
+        member = await client.get_chat_member(grp_id, query.from_user.id)
+        if member.status not in [enums.ChatMemberStatus.ADMINISTRATOR, enums.ChatMemberStatus.OWNER]:
+            return await query.answer("You must be an Admin to change settings.", show_alert=True)
+        except Exception as e:
+            logger.error(f"Error checking admin status: {e}")
+            return await query.answer("I can't check your permissions in that group.", show_alert=True)
 
-        if str(grp_id) != str(grpid):
-            await query.message.edit("Your Active Connection Has Been Changed. Go To /settings.")
-            return await query.answer('Piracy Is Crime')
-
-        if status == "True":
-            await save_group_settings(grpid, set_type, False)
-        else:
-            await save_group_settings(grpid, set_type, True)
-
-        settings = await get_settings(grpid)
-
-        if settings is not None:
+        new_status = False if status == "True" else True
+        await save_group_settings(grp_id, set_type, new_status)
+        settings = await get_settings(grp_id)
+        try:
             buttons = [
                 [
                     InlineKeyboardButton('『𝙵𝙸𝙻𝚃𝙴𝚁 𝙱𝚄𝚃𝚃𝙾𝙽』',
-                                         callback_data=f'setgs#button#{settings["button"]}#{str(grp_id)}'),
-                    InlineKeyboardButton('𝚂𝙸𝙽𝙶𝙻𝙴' if settings["button"] else '𝙳𝙾𝚄𝙱𝙻𝙴',
-                                         callback_data=f'setgs#button#{settings["button"]}#{str(grp_id)}')
+                                         callback_data=f'setgs#button#{settings.get("button", False)}#{str(grp_id)}'),
+                    InlineKeyboardButton('𝚂𝙸𝙽𝙶𝙻𝙴' if settings.get("button", False) else '𝙳𝙾𝚄𝙱𝙻𝙴',
+                                         callback_data=f'setgs#button#{settings.get("button", False)}#{str(grp_id)}')
                 ],
                 [
-                    InlineKeyboardButton('『𝙱𝙾𝚃 𝙿𝙼』', callback_data=f'setgs#botpm#{settings["botpm"]}#{str(grp_id)}'),
-                    InlineKeyboardButton('✅ 𝚈𝙴𝚂' if settings["botpm"] else '❌ 𝙽𝙾',
-                                         callback_data=f'setgs#botpm#{settings["botpm"]}#{str(grp_id)}')
+                    InlineKeyboardButton('『𝙱𝙾𝚃 𝙿𝙼』', callback_data=f'setgs#botpm#{settings.get("botpm", False)}#{str(grp_id)}'),
+                    InlineKeyboardButton('✅ 𝚈𝙴𝚂' if settings.get("botpm", False) else '❌ 𝙽𝙾',
+                                         callback_data=f'setgs#botpm#{settings.get("botpm", False)}#{str(grp_id)}')
                 ],
                 [
                     InlineKeyboardButton('『𝙵𝙸𝙻𝙴 𝚂𝙴𝙲𝚄𝚁𝙴』',
-                                         callback_data=f'setgs#file_secure#{settings["file_secure"]}#{str(grp_id)}'),
-                    InlineKeyboardButton('✅ 𝚈𝙴𝚂' if settings["file_secure"] else '❌ 𝙽𝙾',
-                                         callback_data=f'setgs#file_secure#{settings["file_secure"]}#{str(grp_id)}')
+                                         callback_data=f'setgs#file_secure#{settings.get("file_secure", False)}#{str(grp_id)}'),
+                    InlineKeyboardButton('✅ 𝚈𝙴𝚂' if settings.get("file_secure", False) else '❌ 𝙽𝙾',
+                                         callback_data=f'setgs#file_secure#{settings.get("file_secure", False)}#{str(grp_id)}')
                 ],
                 [
-                    InlineKeyboardButton('『𝙸𝙼𝙳𝙱』', callback_data=f'setgs#imdb#{settings["imdb"]}#{str(grp_id)}'),
-                    InlineKeyboardButton('✅ 𝚈𝙴𝚂' if settings["imdb"] else '❌ 𝙽𝙾',
-                                         callback_data=f'setgs#imdb#{settings["imdb"]}#{str(grp_id)}')
+                    InlineKeyboardButton('『𝙸𝙼𝙳𝙱』', callback_data=f'setgs#imdb#{settings.get("imdb", False)}#{str(grp_id)}'),
+                    InlineKeyboardButton('✅ 𝚈𝙴𝚂' if settings.get("imdb", False) else '❌ 𝙽𝙾',
+                                         callback_data=f'setgs#imdb#{settings.get("imdb", False)}#{str(grp_id)}')
                 ],
                 [
                     InlineKeyboardButton('『𝚂𝙿𝙴𝙻𝙻 𝙲𝙷𝙴𝙲𝙺』',
-                                         callback_data=f'setgs#spell_check#{settings["spell_check"]}#{str(grp_id)}'),
-                    InlineKeyboardButton('✅ 𝚈𝙴𝚂' if settings["spell_check"] else '❌ 𝙽𝙾',
-                                         callback_data=f'setgs#spell_check#{settings["spell_check"]}#{str(grp_id)}')
+                                         callback_data=f'setgs#spell_check#{settings.get("spell_check", False)}#{str(grp_id)}'),
+                    InlineKeyboardButton('✅ 𝚈𝙴𝚂' if settings.get("spell_check", False) else '❌ 𝙽𝙾',
+                                         callback_data=f'setgs#spell_check#{settings.get("spell_check", False)}#{str(grp_id)}')
                 ],
                 [
-                    InlineKeyboardButton('『𝚆𝙴𝙻𝙲𝙾𝙼𝙴 𝚂𝙿𝙴𝙴𝙲𝙷』', callback_data=f'setgs#welcome#{settings["welcome"]}#{str(grp_id)}'),
-                    InlineKeyboardButton('✅ 𝚈𝙴𝚂' if settings["welcome"] else '❌ 𝙽𝙾',
-                                         callback_data=f'setgs#welcome#{settings["welcome"]}#{str(grp_id)}')
+                    InlineKeyboardButton('『𝚆𝙴𝙻𝙲𝙾𝙼𝙴 𝚂𝙿𝙴𝙴𝙲𝙷』', callback_data=f'setgs#welcome#{settings.get("welcome", False)}#{str(grp_id)}'),
+                    InlineKeyboardButton('✅ 𝚈𝙴𝚂' if settings.get("welcome", False) else '❌ 𝙽𝙾',
+                                         callback_data=f'setgs#welcome#{settings.get("welcome", False)}#{str(grp_id)}')
                 ]
             ]
             reply_markup = InlineKeyboardMarkup(buttons)
             await query.message.edit_reply_markup(reply_markup)
-    await query.answer('Piracy Is Crime')
+            await query.answer(f"{set_type.replace('_', ' ').upper()} set to {new_status}")
+    #await query.answer('Piracy Is Crime')
+        except MessageNotModified:
+            await query.answer("Setting already changed.")
+        except Exception as e:
+            logger.error(f"Error rebuilding settings menu: {e}")
+            await query.answer("Setting saved, but couldn't update menu.")
 
 # A more robust auto_filter with debugging and error handling
 async def auto_filter(client, msg, spoll=False):
@@ -1197,7 +1206,7 @@ async def auto_filter(client, msg, spoll=False):
         for file in files:
             key = str(uuid.uuid4())[:8]
             FILE_ID_CACHE[key] = file.file_id
-            if settings["button"]:
+            if settings.get("button", False):
                 btn.append(
                 [
                     InlineKeyboardButton(
