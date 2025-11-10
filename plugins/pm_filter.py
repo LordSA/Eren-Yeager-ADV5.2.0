@@ -1335,6 +1335,6 @@ async def manual_filters(client, message, text=False):
                         )
                 except Exception as e:
                     logger.exception(e)
-                break
+                return True
     else:
         return False
