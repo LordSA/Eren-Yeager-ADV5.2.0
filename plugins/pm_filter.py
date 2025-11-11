@@ -364,7 +364,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
                 logger.error(f"File_id {file_id} not found in database (get_file_details).")
                 return await query.answer('No such file exist.', show_alert=True)
             
-            file = files_[0]
+            file = files_
             title = file.file_name
             size = get_size(file.file_size)
             f_caption = file.caption
