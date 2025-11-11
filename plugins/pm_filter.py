@@ -8,14 +8,13 @@ import uuid
 from cachetools import TTLCache
 from pyrogram.errors.exceptions.bad_request_400 import MediaEmpty, PhotoInvalidDimensions, WebpageMediaEmpty
 from Script import script
-import pyrogram
 from database.connections_mdb import active_connection, all_connections, delete_connection, if_active, make_active, \
     make_inactive
 from info import ADMINS, AUTH_CHANNEL, AUTH_USERS, CUSTOM_FILE_CAPTION, AUTH_GROUPS, P_TTI_SHOW_OFF, IMDB, \
     SINGLE_BUTTON, SPELL_CHECK_REPLY, IMDB_TEMPLATE, VIDS
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from pyrogram import Client, filters, enums
-from pyrogram.errors import FloodWait, UserIsBlocked, MessageNotModified, PeerIdInvalid
+from pyrogram.errors import FloodWait, UserIsBlocked, MessageNotModified, PeerIdInvalid, ChatAdminRequired
 from utils import get_size, is_subscribed, get_poster, search_gagala, temp, get_settings, save_group_settings
 from database.users_chats_db import db
 from database.ia_filterdb import Media, get_file_details, get_search_results
@@ -346,16 +345,16 @@ async def cb_handler(client: Client, query: CallbackQuery):
             alert = alert.replace("\\n", "\n").replace("\\t", "\t")
             await query.answer(alert, show_alert=True)
     if query.data.startswith("file"):
-        ident, file_id = query.data.split("#")
-        logger.info(f"User {query.from_user.id} clicked file button. Ident: {ident}, Key: {file_id}")
-        print(f"[DEBUG] File button clicked - ident: {ident}, file_id: {file_id}")
+        ident, key = query.data.split("#")
+        logger.info(f"User {query.from_user.id} clicked file button. Ident: {ident}, Key: {key}")
+        print(f"[DEBUG] File button clicked - ident: {ident}, file_id: {key}")
         
-        file_id = FILE_ID_CACHE.get(file_id)
+        file_id = FILE_ID_CACHE.get(key)
         if not file_id:
-            logger.warning(f"File key {file_id} not found in cache. Button may be expired.")
+            logger.warning(f"File key {key} not found in cache. Button may be expired.")
             await query.answer("This button has expired. Please send the request again.", show_alert=True)
             return
-        logger.info(f"Retrieved file_id {file_id} from cache for key {file_id}")
+        logger.info(f"Retrieved file_id {file_id} from cache for key {key}")
         try:
             files_ = await get_file_details(file_id)
             print(f"[DEBUG] Files retrieved: {files_}")
@@ -385,35 +384,60 @@ async def cb_handler(client: Client, query: CallbackQuery):
                 f_caption = f"{title}"
 
             if AUTH_CHANNEL and not await is_subscribed(client, query):
-                logger.info(f"User {query.from_user.id} not subscribed. Sending join link.")
-                await query.answer(url=f"https://t.me/{temp.U_NAME}?start={ident}_{file_id}")
+                logger.info(f"User {query.from_user.id} not subscribed. Sending join message to PM.")
+                auth_payload = f"auth_{ident}_{key}"
+                await query.answer(
+                    url=f"https://t.me/{temp.U_NAME}?start={auth_payload}",
+                    text=script.JOIN_TXT
+                )
                 return
-            elif settings['botpm']:
+            
+            if settings.get('botpm', False):
                 logger.info(f"BotPM is True. Sending user to PM for file {file_id}.")
-                await query.answer(url=f"https://t.me/{temp.U_NAME}?start={ident}_{file_id}")
+                await query.answer(url=f"https://t.me/{temp.U_NAME}?start={ident}_{key}")
                 return
             else:
-                logger.info(f"BotPM is False. Attempting to send file {file_id} to user {query.from_user.id} in PM.")
-                await client.send_cached_media(
-                    chat_id=query.from_user.id,
+                logger.info(f"BotPM is False. Attempting to send file {file_id} to group {query.message.chat.id}.")
+                sent_message = await client.send_cached_media(
+                    chat_id=query.message.chat.id,
                     file_id=file_id,
                     caption=f_caption,
                     protect_content=True if ident == "filep" else False 
                 )
-                logger.info(f"Successfully sent file {file_id} to {query.from_user.id}.")
-                await query.answer(f'Hey {query.from_user.first_name} Check PM, I have sent files in pm', show_alert=True)
-                
+                logger.info(f"Successfully sent file {file_id} to group {query.message.chat.id}.")
+                await query.answer(f'Sending file to the group!', show_alert=False)
+                await asyncio.sleep(300)
+                try:
+                    await sent_message.delete()
+                    logger.info(f"Auto-deleted message {sent_message.id} from group.")
+                except Exception as e:
+                    logger.warning(f"Could not auto-delete message from group: {e}")
         except UserIsBlocked:
-            logger.warning(f"Failed to send file {file_id}: User {query.from_user.id} has blocked the bot.")
-            await query.answer('Unblock the bot first!', show_alert=True)
+            logger.warning(f"Failed to send message/file: User {query.from_user.id} has blocked the bot.")
+            await query.answer('I can\'t send you a PM! Unblock me first.', show_alert=True)
+        
         except PeerIdInvalid:
-            logger.warning(f"Failed to send file {file_id}: User {query.from_user.id} has not started the bot (PeerIdInvalid).")
-            await query.answer(url=f"https://t.me/{temp.U_NAME}?start={ident}_{file_id}")
+            logger.warning(f"Failed to send message/file: User {query.from_user.id} has not started the bot (PeerIdInvalid).")
+            await query.answer(url=f"https://t.me/{temp.U_NAME}?start={ident}_{key}", text="I haven't started a chat with you! Click here to start, then try again.")
+
+        except ChatAdminRequired:
+            logger.warning(f"Failed to send file {file_id} to group {query.message.chat.id}: Bot is not admin.")
+            await query.answer("I'm not an admin here! I need to be an admin to send files in the group.", show_alert=True)
+
+        except (MediaEmpty, PhotoInvalidDimensions, WebpageMediaEmpty):
+            logger.error(f"CRITICAL: Failed to send file_id {file_id}. It is INVALID or DELETED from Telegram.", exc_info=True)
+            await query.answer("Error: The file_id is invalid or the file has been deleted. Please re-index.", show_alert=True)
+
+        except FloodWait as e:
+            logger.warning(f"Failed to send file {file_id} to {query.message.chat.id}: FloodWait for {e.x} seconds.")
+            await asyncio.sleep(e.x) 
+            await query.answer(f"Slow down! You are being rate-limited. Please wait {e.x} seconds.", show_alert=True)
+
         except Exception as e:
-            logger.exception(e)
-            print(f"Error in file handler: {e}")
-            await query.answer(url=f"https://t.me/{temp.U_NAME}?start={ident}_{file_id}")
-            
+            logger.error(f"Unknown error sending file {file_id} to {query.message.chat.id}", exc_info=True)
+            await query.answer(f"An unknown error occurred. Check the logs.", show_alert=True)
+
+         
     elif query.data.startswith("checksub"):
         if AUTH_CHANNEL and not await is_subscribed(client, query):
             await query.answer("Join the channel first!", show_alert=True)
@@ -426,7 +450,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
             if not files_:
                 return await query.answer('No such file exist.', show_alert=True)
             
-            file = files_[0]
+            file = files_
             title = file.file_name
             size = get_size(file.file_size)
             f_caption = file.caption

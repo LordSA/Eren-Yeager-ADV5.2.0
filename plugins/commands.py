@@ -1,25 +1,29 @@
 # Made by Lord SA
 import os
-import logging
+import re
+import json
+import uuid
+import base64
 import random
+import logging
 import asyncio
+import requests
+
 from Script import script
+from plugins.selector import MS
+from cachetools import TTLCache
 from pyrogram import Client, filters, enums
 from pyrogram.errors import ChatAdminRequired, FloodWait
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 from database.ia_filterdb import Media, get_file_details
 from database.users_chats_db import db
 from info import CHANNELS, ADMINS, AUTH_CHANNEL, LOG_CHANNEL, BATCH_FILE_CAPTION, CUSTOM_FILE_CAPTION, PROTECT_CONTENT, CHPV
-from plugins.selector import MS
 from utils import get_settings, get_size, is_subscribed, save_group_settings, temp
 from database.connections_mdb import active_connection
 from plugins.Tools.help_func.decorators import check_group_admin
-import re
-import json
-import base64
-import requests
-logger = logging.getLogger(__name__)
 
+logger = logging.getLogger(__name__)
+FILE_ID_CACHE = TTLCache(maxsize=1000, ttl=3600)
 BATCH_FILES = {}
 
 @Client.on_message(filters.command("start") & filters.incoming)
@@ -42,7 +46,7 @@ async def start(client, message):
     if not await db.is_user_exist(message.from_user.id):
         await db.add_user(message.from_user.id, message.from_user.first_name)
         await client.send_message(LOG_CHANNEL, script.LOG_TEXT_P.format(message.from_user.id, message.from_user.mention))
-    if len(message.command) != 2:
+    if len(message.command) == 1:
         buttons = [[
             InlineKeyboardButton('➕ 𝕬𝙳𝙳 〽𝙴 𝕿𝙾 𝖄𝙾𝚄𝚁 𝕲𝚁𝙾𝚄𝙿 ➕', url=f'http://t.me/{temp.U_NAME}?startgroup=true')
             ],[
@@ -72,35 +76,38 @@ async def start(client, message):
                 parse_mode=enums.ParseMode.HTML
             )
         return
+    data = message.command[1]
+
     if AUTH_CHANNEL and not await is_subscribed(client, message):
+        logger.info(f"User {message.from_user.id} is not subscribed. Sending join link.")
         try:
             invite_link = await client.create_chat_invite_link(int(AUTH_CHANNEL))
         except ChatAdminRequired:
             logger.error("Make sure Bot is admin in Forcesub channel")
-            return
+            return await message.reply("Bot is not admin in the updates channel. Cannot get link.")
+        except Exception as e:
+            logger.error(f"Error creating invite link: {e}")
+            return await message.reply("Could not create invite link. Contact my admin.")
         btn = [
-            [
-                InlineKeyboardButton(
-                    "『𝙹𝙾𝙸𝙽 𝙽𝙾𝚆』", url=invite_link.invite_link
-                )
-            ]
+            [InlineKeyboardButton("『𝙹𝙾𝙸𝙽 𝙽𝙾𝚆』", url=invite_link.invite_link)],
+            [InlineKeyboardButton("🔄 『𝚃𝚁𝚈 𝙰𝙶𝙰𝙸𝙽』", url=f"https://t.me/{temp.U_NAME}?start={data}")]
         ]
-
-        if message.command[1] != "subscribe":
-            try:
-                kk, file_id = message.command[1].split("_", 1)
-                pre = 'checksubp' if kk == 'filep' else 'checksub' 
-                btn.append([InlineKeyboardButton("🔄 『𝚃𝚁𝚈 𝙰𝙶𝙰𝙸𝙽』", callback_data=f"{pre}#{file_id}")])
-            except (IndexError, ValueError):
-                btn.append([InlineKeyboardButton("🔄 『𝚃𝚁𝚈 𝙰𝙶𝙰𝙸𝙽』", url=f"https://t.me/{temp.U_NAME}?start={message.command[1]}")])
-        await client.send_message(
-            chat_id=message.from_user.id,
-            text="**Please Join My Updates Channel to use this Bot!**",
+        await message.reply(
+            text=script.JOIN_TXT,
             reply_markup=InlineKeyboardMarkup(btn),
             parse_mode=enums.ParseMode.MARKDOWN
-            )
+        )
         return
-    if len(message.command) == 2 and message.command[1] in ["subscribe", "error", "okay", "help"]:
+    
+    if data.startswith("auth_"):
+        logger.info("User is subscribed, stripping 'auth_' prefix.")
+        try:
+           data = data.split("_", 2)[1] + "_" + data.split("_", 2)[2]
+        except:
+            logger.error(f"Error splitting auth_key: {data}")
+            data = "help"
+            
+    if data in ["subscribe", "error", "okay", "help"]:
         buttons = [[
             InlineKeyboardButton('➕ 𝕬𝙳𝙳 〽𝙴 𝕿𝙾 𝖄𝙾𝚄𝚁 𝕲𝚁𝙾𝚄𝙿 ➕', url=f'http://t.me/{temp.U_NAME}?startgroup=true')
             ],[
@@ -130,12 +137,6 @@ async def start(client, message):
                 parse_mode=enums.ParseMode.HTML
             )
         return
-    data = message.command[1]
-    try:
-        pre, file_id = data.split('_', 1)
-    except:
-        file_id = data
-        pre = ""
     if data.split("-", 1)[0] == "BATCH":
         sts = await message.reply("Please wait")
         file_id = data.split("-", 1)[1]
@@ -236,53 +237,64 @@ async def start(client, message):
         return await sts.delete()
         
     
-    files = await get_file_details(file_id) 
-    if not files: 
+    try:
+        pre, key = data.split('_', 1)
+    except:
+        key = data
+        pre = ""
+    
+    logger.info(f"User {message.from_user.id} requested file with key: {key}")
+    file_id = FILE_ID_CACHE.get(key)
+
+    if not file_id:
+        logger.warning(f"File key {key} not found in cache. Link may be expired.") 
         try:
             pre, file_id = ((base64.urlsafe_b64decode(data + "=" * (-len(data) % 4))).decode("ascii")).split("_", 1)
+            logger.info("Legacy b64 file_id found.")
         except:
+            logger.error(f"No valid file_id or cache key found for: {data}")
             return await message.reply('No such file exist.')
-        
-        try:
-            msg = await client.send_cached_media(
-                chat_id=message.from_user.id,
-                file_id=file_id,
-                protect_content=True if pre == 'filep' else False,
-                )
-            filetype = msg.media
-            file = getattr(msg, filetype)
-            title = file.file_name
-            size=get_size(file.file_size)
-            f_caption = f"<code>{title}</code>"
-            if CUSTOM_FILE_CAPTION:
-                try:
-                    f_caption=CUSTOM_FILE_CAPTION.format(file_name= '' if title is None else title, file_size='' if size is None else size, file_caption='')
-                except:
-                    return
-            await msg.edit_caption(f_caption)
-            return
-        except:
-            pass
-        return await message.reply('No such file exist.')
+    try:
+        files = await get_file_details(file_id)
+        if not files:
+            logger.error(f"File_id {file_id} not found in database.")
+            return await message.reply('This file is no longer in my database.', quote=True)
+    except Exception as e:
+        logger.error(f"Error getting file details: {e}", exc_info=True)
+        return await message.reply('An error occurred while fetching file details.', quote=True)
+    file = files
+    title = file.file_name
+    size=get_size(file.file_size)
+    f_caption=file.caption
     
-    title = files.file_name
-    size=get_size(files.file_size)
-    f_caption=files.caption
     if CUSTOM_FILE_CAPTION:
         try:
             f_caption=CUSTOM_FILE_CAPTION.format(file_name= '' if title is None else title, file_size='' if size is None else size, file_caption='' if f_caption is None else f_caption)
         except Exception as e:
             logger.exception(e)
-            f_caption=f_caption
+    
     if f_caption is None:
-        f_caption = f"{files.file_name}"
-    await client.send_cached_media(
-        chat_id=message.from_user.id,
-        file_id=file_id,
-        caption=f_caption,
-        protect_content=True if pre == 'filep' else False,
+        f_caption = f"{file.file_name}"
+    
+    logger.info(f"Sending file {file_id} to user {message.from_user.id} in PM.")
+    
+    try:
+        sent_message = await client.send_cached_media(
+            chat_id=message.from_user.id,
+            file_id=file_id,
+            caption=f_caption,
+            protect_content=True if pre == 'filep' else False,
         )
-
+    except Exception as e:
+        logger.error(f"Failed to send file {file_id} to {message.from_user.id}", exc_info=True)
+        return await message.reply("I couldn't send the file. This might be because I can't start a PM with you (start me first!) or the file is corrupt.", quote=True)
+    
+    await asyncio.sleep(300) #timer for autodelete
+    try:
+        await sent_message.delete()
+        logger.info(f"Auto-deleted message {sent_message.id} from PM.")
+    except Exception as e:
+        logger.warning(f"Could not auto-delete PM: {e}")
 
 @Client.on_message(filters.command('channel') & filters.user(ADMINS))
 async def channel_info(bot, message):
