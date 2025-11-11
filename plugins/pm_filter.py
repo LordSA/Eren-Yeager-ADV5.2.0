@@ -382,60 +382,15 @@ async def cb_handler(client: Client, query: CallbackQuery):
             
             if f_caption is None:
                 f_caption = f"{title}"
-            
-            #Just for Backup
-            '''if AUTH_CHANNEL and not await is_subscribed(client, query):
-                logger.info(f"User {query.from_user.id} not subscribed. Sending join link.")
-                await query.answer(url=f"https://t.me/{temp.U_NAME}?start={ident}_{file_id}")
-                return
-            elif settings['botpm']:
-                logger.info(f"BotPM is True. Sending user to PM for file {file_id}.")
-                await query.answer(url=f"https://t.me/{temp.U_NAME}?start={ident}_{file_id}")
-                return
-            else:
-                logger.info(f"BotPM is False. Attempting to send file {file_id} to user {query.from_user.id} in PM.")
-                await client.send_cached_media(
-                    chat_id=query.from_user.id,
-                    file_id=file_id,
-                    caption=f_caption,
-                    protect_content=True if ident == "filep" else False 
-                )
-                logger.info(f"Successfully sent file {file_id} to {query.from_user.id}.")
-                await query.answer(f'Hey {query.from_user.first_name} Check PM, I have sent files in pm', show_alert=True)
-                
-        except UserIsBlocked:
-            logger.warning(f"Failed to send file {file_id}: User {query.from_user.id} has blocked the bot.")
-            await query.answer('Unblock the bot first!', show_alert=True)
-        except PeerIdInvalid:
-            logger.warning(f"Failed to send file {file_id}: User {query.from_user.id} has not started the bot (PeerIdInvalid).")
-            await query.answer(url=f"https://t.me/{temp.U_NAME}?start={ident}_{file_id}")
-        except Exception as e:
-            logger.exception(e)
-            print(f"Error in file handler: {e}")
-            await query.answer(url=f"https://t.me/{temp.U_NAME}?start={ident}_{file_id}")'''
+
             if AUTH_CHANNEL and not await is_subscribed(client, query):
                 logger.info(f"User {query.from_user.id} not subscribed. Sending join message to PM.")
-                try:
-                    invite_link = await client.create_chat_invite_link(int(AUTH_CHANNEL))
-                except ChatAdminRequired:
-                    logger.error("Bot must be admin in AUTH_CHANNEL to create invite links.")
-                    return await query.answer("Bot is not admin in the updates channel. Cannot get link.", show_alert=True)
-                except Exception as e:
-                    logger.error(f"Error creating invite link: {e}")
-                    return await query.answer("Could not create invite link. Contact my admin.", show_alert=True)
-                btn = [[
-                    InlineKeyboardButton("『𝙹𝙾𝙸𝙽 𝙽𝙾𝚆』", url=invite_link.invite_link)
-                ],[
-                    InlineKeyboardButton("🔄 『𝚃𝚁𝚈 𝙰𝙶𝙰𝙸𝙽』", callback_data=f"{ident}#{key}")
-                ]]
-
-                await client.send_message(
-                    chat_id = query.from_user.id,
-                    text="**Please Join My Updates Channel to use this Bot!**\n\nClick 'Try Again' after joining.",
-                    reply_markup=InlineKeyboardMarkup(btn),
-                    parse_mode=enums.ParseMode.MARKDOWN
+                auth_payload = f"auth_{ident}_{key}"
+                await query.answer(
+                    url=f"https://t.me/{temp.U_NAME}?start={auth_payload}",
+                    text=script.JOIN_TXT
                 )
-                return await query.answer("You must join my updates channel first! I've sent you a link in PM.", show_alert=True)
+                return
             
             if settings.get('botpm', False):
                 logger.info(f"BotPM is True. Sending user to PM for file {file_id}.")
@@ -443,7 +398,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
                 return
             else:
                 logger.info(f"BotPM is False. Attempting to send file {file_id} to group {query.message.chat.id}.")
-                await client.send_cached_media(
+                sent_message = await client.send_cached_media(
                     chat_id=query.message.chat.id,
                     file_id=file_id,
                     caption=f_caption,
@@ -451,6 +406,12 @@ async def cb_handler(client: Client, query: CallbackQuery):
                 )
                 logger.info(f"Successfully sent file {file_id} to group {query.message.chat.id}.")
                 await query.answer(f'Sending file to the group!', show_alert=False)
+                await asyncio.sleep(300)
+                try:
+                    await sent_message.delete()
+                    logger.info(f"Auto-deleted message {sent_message.id} from group.")
+                except Exception as e:
+                    logger.warning(f"Could not auto-delete message from group: {e}")
         except UserIsBlocked:
             logger.warning(f"Failed to send message/file: User {query.from_user.id} has blocked the bot.")
             await query.answer('I can\'t send you a PM! Unblock me first.', show_alert=True)
