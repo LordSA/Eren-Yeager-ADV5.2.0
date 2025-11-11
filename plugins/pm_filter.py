@@ -552,7 +552,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
         buttons = [[
             InlineKeyboardButton('『𝙼𝚄𝚃𝙴』',callback_data='mute'),
             InlineKeyboardButton('『𝚁𝙴𝙿𝙾𝚁𝚃』',callback_data='report'),
-            InlineKeyboardButton('『𝙺𝙸𝙲𝙺』', callback_data='zombies')                                                       
+            InlineKeyboardButton('『𝙺𝙸𝙲𝙺』', callback_data='kick')                                                       
         ], [
             InlineKeyboardButton('『𝙵𝚄𝙽』', callback_data='memes'),
  #       ], [
@@ -865,7 +865,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
             reply_markup=reply_markup,
             parse_mode=enums.ParseMode.HTML
         )
-    elif query.data == "zombies":
+    elif query.data == "kick":
         buttons = [[
             InlineKeyboardButton('👩‍🦯 𝕭𝙰𝙲𝙺', callback_data='nxt1')
         ]]
@@ -880,7 +880,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
             text="◾◾◾"
         )
         await query.message.edit_text(
-            text=script.ZOMBIES_TXT,
+            text=script.KICK_TXT,
             disable_web_page_preview=True,
             reply_markup=reply_markup,
             parse_mode=enums.ParseMode.HTML

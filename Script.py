@@ -378,7 +378,7 @@ a bot to create a link to share text in the telegram.
 • Supports 10+ Indian languages
 • Maximum 3000 characters per message
     """
-    ZOMBIES_TXT = """Help: <b>Zombies</b>
+    KICK_TXT = """Help: <b>Zombies</b>
 
 <b>Kick incative members from group. Add me as admin with ban users permission in group.</b>
 
