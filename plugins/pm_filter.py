@@ -347,15 +347,15 @@ async def cb_handler(client: Client, query: CallbackQuery):
             await query.answer(alert, show_alert=True)
     if query.data.startswith("file"):
         ident, file_id = query.data.split("#")
-        logger.info(f"User {query.from_user.id} clicked file button. Ident: {ident}, Key: {key}")
+        logger.info(f"User {query.from_user.id} clicked file button. Ident: {ident}, Key: {file_id}")
         print(f"[DEBUG] File button clicked - ident: {ident}, file_id: {file_id}")
         
-        file_id = FILE_ID_CACHE.get(key)
+        file_id = FILE_ID_CACHE.get(file_id)
         if not file_id:
-            logger.warning(f"File key {key} not found in cache. Button may be expired.")
+            logger.warning(f"File key {file_id} not found in cache. Button may be expired.")
             await query.answer("This button has expired. Please send the request again.", show_alert=True)
             return
-        logger.info(f"Retrieved file_id {file_id} from cache for key {key}")
+        logger.info(f"Retrieved file_id {file_id} from cache for key {file_id}")
         try:
             files_ = await get_file_details(file_id)
             print(f"[DEBUG] Files retrieved: {files_}")
@@ -364,7 +364,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
                 logger.error(f"File_id {file_id} not found in database (get_file_details).")
                 return await query.answer('No such file exist.', show_alert=True)
             
-            file = files_[0]
+            file = files_
             title = file.file_name
             size = get_size(file.file_size)
             f_caption = file.caption
@@ -552,7 +552,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
         buttons = [[
             InlineKeyboardButton('『𝙼𝚄𝚃𝙴』',callback_data='mute'),
             InlineKeyboardButton('『𝚁𝙴𝙿𝙾𝚁𝚃』',callback_data='report'),
-            InlineKeyboardButton('『𝙺𝙸𝙲𝙺』', callback_data='zombies')                                                       
+            InlineKeyboardButton('『𝙺𝙸𝙲𝙺』', callback_data='kick')                                                       
         ], [
             InlineKeyboardButton('『𝙵𝚄𝙽』', callback_data='memes'),
  #       ], [
@@ -865,7 +865,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
             reply_markup=reply_markup,
             parse_mode=enums.ParseMode.HTML
         )
-    elif query.data == "zombies":
+    elif query.data == "kick":
         buttons = [[
             InlineKeyboardButton('👩‍🦯 𝕭𝙰𝙲𝙺', callback_data='nxt1')
         ]]
@@ -880,7 +880,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
             text="◾◾◾"
         )
         await query.message.edit_text(
-            text=script.ZOMBIES_TXT,
+            text=script.KICK_TXT,
             disable_web_page_preview=True,
             reply_markup=reply_markup,
             parse_mode=enums.ParseMode.HTML
@@ -907,7 +907,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
         )
     elif query.data == "memes":
         buttons = [[
-            InlineKeyboardButton('👩‍🦯 𝕭𝙰𝙲𝙺', callback_data='nxt2')
+            InlineKeyboardButton('👩‍🦯 𝕭𝙰𝙲𝙺', callback_data='nxt1')
         ]]
         reply_markup = InlineKeyboardMarkup(buttons)
         await query.message.edit_text(
