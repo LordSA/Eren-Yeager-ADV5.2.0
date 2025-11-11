@@ -1,21 +1,26 @@
+import re
+import os
+import uuid
+import asyncio
+import aiohttp 
 import logging
+import requests
+
+
+from cachetools import TTLCache
 from pyrogram.errors import InputUserDeactivated, UserNotParticipant, FloodWait, UserIsBlocked, PeerIdInvalid
 from info import AUTH_CHANNEL, LONG_IMDB_DESCRIPTION, MAX_LIST_ELM
 from imdb import IMDb
-import asyncio
-import aiohttp 
 from pyrogram.types import Message, InlineKeyboardButton
 from pyrogram import enums
 from typing import Union
-import re
-import os
 from datetime import datetime
 from typing import List
 from database.users_chats_db import db
 from bs4 import BeautifulSoup
-import requests
 
 
+FILE_ID_CACHE = TTLCache(maxsize=1000, ttl=3600)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
