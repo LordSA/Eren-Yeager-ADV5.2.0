@@ -347,15 +347,15 @@ async def cb_handler(client: Client, query: CallbackQuery):
             await query.answer(alert, show_alert=True)
     if query.data.startswith("file"):
         ident, file_id = query.data.split("#")
-        logger.info(f"User {query.from_user.id} clicked file button. Ident: {ident}, Key: {key}")
+        logger.info(f"User {query.from_user.id} clicked file button. Ident: {ident}, Key: {file_id}")
         print(f"[DEBUG] File button clicked - ident: {ident}, file_id: {file_id}")
         
-        file_id = FILE_ID_CACHE.get(key)
+        file_id = FILE_ID_CACHE.get(file_id)
         if not file_id:
-            logger.warning(f"File key {key} not found in cache. Button may be expired.")
+            logger.warning(f"File key {file_id} not found in cache. Button may be expired.")
             await query.answer("This button has expired. Please send the request again.", show_alert=True)
             return
-        logger.info(f"Retrieved file_id {file_id} from cache for key {key}")
+        logger.info(f"Retrieved file_id {file_id} from cache for key {file_id}")
         try:
             files_ = await get_file_details(file_id)
             print(f"[DEBUG] Files retrieved: {files_}")
