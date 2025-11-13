@@ -150,64 +150,90 @@ async def imdb_search(client, message):
 
 @Client.on_callback_query(filters.regex('^imdb'))
 async def imdb_callback(bot: Client, quer_y: CallbackQuery):
-    i, movie = quer_y.data.split('#')
-    imdb = await get_poster(query=movie, id=True)
+    try:
+        i, movie_id = quer_y.data.split('#')
+    except ValueError:
+        await quer_y.answer("Invalid callback data!", show_alert=True)
+        return
+
+    imdb = await get_poster(query=movie_id, id=True)
+
+    if not imdb:
+        await quer_y.message.edit("Error: Could not find details for that movie.")
+        await quer_y.answer("Movie not found", show_alert=True)
+        return
+
+    template_vars = {
+        "query": imdb.get('title', 'N/A'),
+        "title": imdb.get('title', 'N/A'),
+        "votes": imdb.get('votes', 'N/A'),
+        "aka": imdb.get("aka", 'N/A'),
+        "seasons": imdb.get("seasons", 'N/A'),
+        "box_office": imdb.get('box_office', 'N/A'),
+        "localized_title": imdb.get('localized_title', 'N/A'),
+        "kind": imdb.get('kind', 'N/A'),
+        "imdb_id": imdb.get("imdb_id", 'N/A'),
+        "cast": imdb.get("cast", 'N/A'),
+        "runtime": imdb.get("runtime", 'N/A'),
+        "countries": imdb.get("countries", 'N/A'),
+        "certificates": imdb.get("certificates", 'N/A'),
+        "languages": imdb.get("languages", 'N/A'),
+        "director": imdb.get("director", 'N/A'),
+        "writer": imdb.get("writer", 'N/A'),
+        "producer": imdb.get("producer", 'N/A'),
+        "composer": imdb.get("composer", 'N/A'),
+        "cinematographer": imdb.get("cinematographer", 'N/A'),
+        "music_team": imdb.get("music_team", 'N/A'),
+        "distributors": imdb.get("distributors", 'N/A'),
+        "release_date": imdb.get('release_date', 'N/A'),
+        "year": imdb.get('year', 'N/A'),
+        "genres": imdb.get('genres', 'N/A'),
+        "poster": imdb.get('poster', None),
+        "plot": imdb.get('plot', 'N/A'),
+        "rating": imdb.get('rating', 'N/A'),
+        "url": imdb.get('url', '#')
+    }
+
+    caption = IMDB_TEMPLATE.format(**template_vars)
+
     btn = [
-            [
-                InlineKeyboardButton(
-                    text=f"{imdb.get('title')}",
-                    url=imdb['url'],
-                )
-            ]
-        ]
-    message = quer_y.message.reply_to_message or quer_y.message
-    if imdb:
-        caption = IMDB_TEMPLATE.format(
-            query = imdb['title'],
-            title = imdb['title'],
-            votes = imdb['votes'],
-            aka = imdb["aka"],
-            seasons = imdb["seasons"],
-            box_office = imdb['box_office'],
-            localized_title = imdb['localized_title'],
-            kind = imdb['kind'],
-            imdb_id = imdb["imdb_id"],
-            cast = imdb["cast"],
-            runtime = imdb["runtime"],
-            countries = imdb["countries"],
-            certificates = imdb["certificates"],
-            languages = imdb["languages"],
-            director = imdb["director"],
-            writer = imdb["writer"],
-            producer = imdb["producer"],
-            composer = imdb["composer"],
-            cinematographer = imdb["cinematographer"],
-            music_team = imdb["music_team"],
-            distributors = imdb["distributors"],
-            release_date = imdb['release_date'],
-            year = imdb['year'],
-            genres = imdb['genres'],
-            poster = imdb['poster'],
-            plot = imdb['plot'],
-            rating = imdb['rating'],
-            url = imdb['url'],
-            **locals()
-        )
-    else:
-        caption = "No Results"
-    if imdb.get('poster'):
+        [InlineKeyboardButton(
+            text=f"🔗 {template_vars['title']}",
+            url=template_vars['url']
+        )]
+    ]
+    reply_markup = InlineKeyboardMarkup(btn)
+
+    poster = imdb.get('poster')
+    
+    if poster:
         try:
-            await quer_y.message.reply_photo(photo=imdb['poster'], caption=caption, reply_markup=InlineKeyboardMarkup(btn))
+            await quer_y.message.reply_photo(
+                photo=poster,
+                caption=caption,
+                reply_markup=reply_markup
+            )
+            await quer_y.message.delete()
+        
         except (MediaEmpty, PhotoInvalidDimensions, WebpageMediaEmpty):
-            pic = imdb.get('poster')
-            poster = pic.replace('.jpg', "._V1_UX360.jpg")
-            await quer_y.message.reply_photo(photo=poster, caption=caption, reply_markup=InlineKeyboardMarkup(btn))
+            try:
+                pic = poster.replace('.jpg', "._V1_UX360.jpg")
+                await quer_y.message.reply_photo(
+                    photo=pic,
+                    caption=caption,
+                    reply_markup=reply_markup
+                )
+                await quer_y.message.delete()
+            except Exception as e:
+                logger.warning(f"IMDb photo failed twice: {e}")
+                await quer_y.message.edit(caption, reply_markup=reply_markup, disable_web_page_preview=False)
+        
         except Exception as e:
             logger.exception(e)
-            await quer_y.message.reply(caption, reply_markup=InlineKeyboardMarkup(btn), disable_web_page_preview=False)
-        await quer_y.message.delete()
+            await quer_y.message.edit(caption, reply_markup=reply_markup, disable_web_page_preview=False)
     else:
-        await quer_y.message.edit(caption, reply_markup=InlineKeyboardMarkup(btn), disable_web_page_preview=False)
+        await quer_y.message.edit(caption, reply_markup=reply_markup, disable_web_page_preview=False)
+
     await quer_y.answer()
         
 
