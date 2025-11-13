@@ -2,7 +2,6 @@
 import os
 import re
 import json
-import uuid
 import base64
 import random
 import logging
@@ -11,19 +10,17 @@ import requests
 
 from Script import script
 from plugins.selector import MS
-from cachetools import TTLCache
 from pyrogram import Client, filters, enums
 from pyrogram.errors import ChatAdminRequired, FloodWait
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 from database.ia_filterdb import Media, get_file_details
 from database.users_chats_db import db
 from info import CHANNELS, ADMINS, AUTH_CHANNEL, LOG_CHANNEL, BATCH_FILE_CAPTION, CUSTOM_FILE_CAPTION, PROTECT_CONTENT, CHPV
-from utils import get_settings, get_size, is_subscribed, save_group_settings, temp
+from utils import get_settings, get_size, is_subscribed, save_group_settings, temp, FILE_ID_CACHE
 from database.connections_mdb import active_connection
 from plugins.Tools.help_func.decorators import check_group_admin
 
 logger = logging.getLogger(__name__)
-FILE_ID_CACHE = TTLCache(maxsize=1000, ttl=3600)
 BATCH_FILES = {}
 
 @Client.on_message(filters.command("start") & filters.incoming)
