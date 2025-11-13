@@ -559,7 +559,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
         ], [
             InlineKeyboardButton('『𝙿𝚄𝚁𝙶𝙴』', callback_data='purge'),
             InlineKeyboardButton('『𝕾𝚃𝙸𝙲𝙺𝙴𝚁 𝙸𝙳』', callback_data='sticker'),  
-            InlineKeyboardButton('『𝙸𝙼𝙳𝙱』', callback_data='imdb')
+            InlineKeyboardButton('『𝙸𝙼𝙳𝙱』', callback_data='imdbc')
         ], [            
             InlineKeyboardButton('『𝚃𝙷𝚄𝙶』', callback_data='thug'),
             InlineKeyboardButton('『𝚃𝚃𝚂』', callback_data='tts'),
@@ -742,7 +742,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
             reply_markup=reply_markup,
             parse_mode=enums.ParseMode.HTML
         )
-    elif query.data == "imdb":
+    elif query.data == "imdbc":
         buttons = [[
             InlineKeyboardButton('👩‍🦯 𝕭𝙰𝙲𝙺', callback_data='help')
         ]]
@@ -816,7 +816,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
             text="◾◾◾"
         )
         await query.message.edit_text(
-            text=script.JSON_TXT_TXT,
+            text=script.JSON_TXT,
             disable_web_page_preview=True,
             reply_markup=reply_markup,
             parse_mode=enums.ParseMode.HTML
@@ -1021,7 +1021,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
         )
     elif query.data == "extra":
         buttons = [[                    
-            InlineKeyboardButton('👩‍🦯 𝕭ack', callback_data='next1'),
+            InlineKeyboardButton('👩‍🦯 𝕭ack', callback_data='nxt1'),
             InlineKeyboardButton('👮‍♂️ 𝕬𝙳𝙼𝙸𝙽', callback_data='admin')
         ]]
         reply_markup = InlineKeyboardMarkup(buttons)
