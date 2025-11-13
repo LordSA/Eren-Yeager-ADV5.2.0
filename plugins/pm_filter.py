@@ -559,7 +559,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
         ], [
             InlineKeyboardButton('『𝙿𝚄𝚁𝙶𝙴』', callback_data='purge'),
             InlineKeyboardButton('『𝕾𝚃𝙸𝙲𝙺𝙴𝚁 𝙸𝙳』', callback_data='sticker'),  
-            InlineKeyboardButton('『𝙸𝙼𝙳𝙱』', callback_data='imdbc')
+            InlineKeyboardButton('『𝙸𝙼𝙳𝙱』', callback_data='imdba')
         ], [            
             InlineKeyboardButton('『𝚃𝙷𝚄𝙶』', callback_data='thug'),
             InlineKeyboardButton('『𝚃𝚃𝚂』', callback_data='tts'),
@@ -742,7 +742,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
             reply_markup=reply_markup,
             parse_mode=enums.ParseMode.HTML
         )
-    elif query.data == "imdbc":
+    elif query.data == "imdba":
         buttons = [[
             InlineKeyboardButton('👩‍🦯 𝕭𝙰𝙲𝙺', callback_data='help')
         ]]
