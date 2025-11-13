@@ -1,6 +1,6 @@
 import random
 from pyrogram import Client, filters
-from plugins.Tools.help_func.cust_p_filters import f_onw_fliter
+from plugins.Tools.help_func.cust_p_filters import f_owner_filter
 
 
 RUN_STRINGS = (
@@ -72,7 +72,7 @@ RUN_STRINGS = (
 
 @Client.on_message(
     filters.command("thug") &
-    f_onw_fliter
+    f_owner_filter
 )
 async def thug(_, message):
     """ /runs strings """
