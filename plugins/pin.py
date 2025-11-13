@@ -2,10 +2,10 @@ import logging
 from pyrogram import Client, filters
 from pyrogram.types import Message
 from pyrogram.errors import ChatAdminRequired, RightForbidden
-from plugins.Tools.help_func.cust_p_filters import admin_fliter
+from plugins.Tools.help_func.cust_p_filters import admin_filter
 
 logger = logging.getLogger(__name__)
-@Client.on_message(filters.command("pin") & admin_fliter)
+@Client.on_message(filters.command("pin") & admin_filter)
 async def pin(client: Client, message: Message):
     if not message.reply_to_message:
         await message.reply_text("Reply to a message to pin it.")
@@ -28,7 +28,7 @@ async def pin(client: Client, message: Message):
         await message.reply_text(f"An error occurred: {e}")
 
 
-@Client.on_message(filters.command("unpin") & admin_fliter)
+@Client.on_message(filters.command("unpin") & admin_filter)
 async def unpin(client: Client, message: Message):
     if not message.reply_to_message:
         await message.reply_text("Reply to a message to unpin it.")
