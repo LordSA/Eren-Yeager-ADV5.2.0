@@ -4,9 +4,9 @@ from pyrogram import Client, filters, enums
 from pyrogram.errors import ChatAdminRequired, FloodWait
 from plugins.Tools.help_func.admin_check import admin_check
 from plugins.admin_tools import logger
-from plugins.Tools.help_func.cust_p_filters import f_owner_fliter
+from plugins.Tools.help_func.cust_p_filters import f_owner_filter
 
-@Client.on_message(filters.command("purge") & f_owner_fliter)
+@Client.on_message(filters.command("purge") & f_owner_filter)
 async def purge(client, message):
     if message.chat.type not in (enums.ChatType.SUPERGROUP, enums.ChatType.CHANNEL):
         return
