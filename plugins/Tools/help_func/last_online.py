@@ -1,21 +1,22 @@
 from pyrogram.types import User
+from pyrogram import enums
 from datetime import datetime
 
-
 def last_online(from_user: User) -> str:
-    time = ""
+    
     if from_user.is_bot:
-        time += "🤖 Bot :("
-    elif from_user.status == 'recently':
-        time += "Recently"
-    elif from_user.status == 'within_week':
-        time += "Within the last week"
-    elif from_user.status == 'within_month':
-        time += "Within the last month"
-    elif from_user.status == 'long_time_ago':
-        time += "A long time ago :("
-    elif from_user.status == 'online':
-        time += "Currently Online"
-    elif from_user.status == 'offline':
-        time += datetime.fromtimestamp(from_user.last_online_date).strftime("%a, %d %b %Y, %H:%M:%S")
-    return time
+        return "🤖 Bot :("
+    if from_user.status == enums.UserStatus.ONLINE:
+        return "Currently Online"
+    if from_user.status == enums.UserStatus.OFFLINE:
+        return datetime.fromtimestamp(from_user.last_online_date).strftime("%a, %d %b %Y, %H:%M:%S")
+    if from_user.status == enums.UserStatus.RECENTLY:
+        return "Recently"
+    if from_user.status == enums.UserStatus.LAST_WEEK:
+        return "Within the last week"       
+    if from_user.status == enums.UserStatus.LAST_MONTH:
+        return "Within the last month" 
+    if from_user.status == enums.UserStatus.LONG_AGO:
+        return "A long time ago :("
+
+    return "Unknown status"

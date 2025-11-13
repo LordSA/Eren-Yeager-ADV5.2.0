@@ -1,10 +1,8 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 from pyrogram.types import Message
+from pyrogram import enums
+from typing import Tuple, Union
 
-
-def extract_user(message: Message) -> (int, str):
+def extract_user(message: Message) -> Tuple[Union[int, str], str]:
     """extracts the user from a message"""
     user_id = None
     user_first_name = None
@@ -16,10 +14,8 @@ def extract_user(message: Message) -> (int, str):
     elif len(message.command) > 1:
         if (
             len(message.entities) > 1 and
-            message.entities[1].type == "text_mention"
+            message.entities[1].type == enums.MessageEntityType.TEXT_MENTION
         ):
-            # 0: is the command used
-            # 1: should be the user specified
             required_entity = message.entities[1]
             user_id = required_entity.user.id
             user_first_name = required_entity.user.first_name
@@ -31,7 +27,7 @@ def extract_user(message: Message) -> (int, str):
         try:
             user_id = int(user_id)
         except ValueError:
-            print("fool")
+            pass
 
     else:
         user_id = message.from_user.id

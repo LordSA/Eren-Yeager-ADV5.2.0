@@ -7,8 +7,6 @@ class script(object):
     HELP_TXT = """𝙷𝙴𝚈 {}
 𝙷𝙴𝚁𝙴 𝙸𝚂 𝚃𝙷𝙴 𝙷𝙴𝙻𝙿 𝙵𝙾𝚁 𝙼𝚈 𝙲𝙾𝙼𝙼𝙰𝙽𝙳𝚂."""
     JOIN_TXT = """**Please Join My Updates Channel to use this Bot!**\n\nClick 'Try Again' after joining."""
-    HELLP_TXT = """𝙷𝙴𝚈 {}
-𝙷𝙴𝚁𝙴 𝙸𝚂 𝚃𝙷𝙴 𝙷𝙴𝙻𝙿 𝙵𝙾𝚁 𝙼𝚈 𝙲𝙾𝙼𝙼𝙰𝙽𝙳𝚂."""
     ABOUT_TXT = f"""✯ 𝙼𝚈 𝙽𝙰𝙼𝙴: {{}}
 ⫷⫸⫷⫸⫷⫸⫷⫸⫷⫸⫷⫸⫷⫸⫷⫸⫷⫸
 ✯ 『𝙲𝚁𝙴𝙰𝚃𝙾𝚁』   : <a href=https://t.me/shibilii_offline>𝕷𝖔𝖗𝖉 𝖔𝖋 𝕯𝖆𝖗𝖐𝖓𝖊𝖘𝖘</a>
@@ -36,7 +34,7 @@ class script(object):
 •/whois : ɢɪᴠᴇ ᴀ ᴜsᴇʀ 𝔉ᴜʟʟ ᴅᴇᴛᴀɪʟs"""   
     MANUELFILTER_TXT = """ʜᴇʟᴘ: <b>𝙵𝙸𝙻𝚃𝙴𝚁𝚂</b>
 
-✯ ғɪʟᴛᴇʀ ɪs 🅃🄷🄴 🄵🄴🄰🅃🅄🅁🄴 🅆🄴🅁🄴 🅄🅂🄴🅁🅂 🄲🄰🄽 🅂🄴🅃 🄰🅄🅃🄾🄼🄰🅃🄴🄳 🅁🄴🄿🄻🄸🄴🅂 🄵🄾🅁 🄰 🄿🄰🅁🅃🄸🄲🅄🄻🄰🅁 🄺🄴🅈🅆🄾🅁🄳 🄰🄽🄳 🄼🄾🅅🄸🄴 🅆🄾🅁🄻🄳 🅆🄸🄻🄻 🅁🄴🅂🄿🄾🄽🄳 🅆🄷🄴🄽🄴🅅🄴🅁 🄰 🄺🄴🅈🅆🄾🅁🄳 🄸🅂 🄵🄾🅄🄽🄳 🅃🄷🄴 🄼🄴🅂🅂🄰🄶🄴
+✯ 𝙵𝚒𝚕𝚝𝚎𝚛 𝚒𝚜 𝚃𝚑𝚎 𝙵𝚎𝚊𝚝𝚞𝚛𝚎 𝚠𝚑𝚎𝚛𝚎 𝚞𝚜𝚎𝚛𝚜 𝚌𝚊𝚗 𝚜𝚎𝚝 𝚊𝚞𝚝𝚘𝚖𝚊𝚝𝚎𝚍 𝚛𝚎𝚙𝚕𝚒𝚎𝚜 𝚏𝚘𝚛 𝚊 𝙿𝚊𝚛𝚝𝚒𝚌𝚞𝚕𝚎𝚛 𝙺𝚎𝚢𝚠𝚘𝚛𝚍 𝚊𝚗𝚍 𝙾𝚞𝚛 𝙱𝚘𝚝 𝚠𝚒𝚕𝚕 𝚛𝚎𝚜𝚙𝚘𝚗𝚍 𝚠𝚑𝚎𝚗𝚎𝚟𝚎𝚛 𝚊 𝚔𝚎𝚢𝚠𝚘𝚛𝚍 𝚒𝚜 𝙵𝚘𝚞𝚗𝚍 𝚝𝚑𝚎 𝚖𝚎𝚜𝚜𝚊𝚐𝚎
 
 <b>ɴᴏᴛᴇ:</b>
 1. ᴇʀᴇɴ ʏᴇᴀɢᴇʀ sʜᴏᴜʟᴅ ʜᴀᴠᴇ ᴀᴅᴍɪɴ ᴘʀɪᴠɪʟʟᴀɢᴇ.
@@ -91,31 +89,24 @@ class script(object):
 <b>Commands and Usage:</b>
 • /connect  - <code>connect a particular chat to your PM</code>
 • /disconnect  - <code>disconnect from a chat</code>
-• /connections - <code>list all your connections</code>"""   
-    EXTRAMOD_TXT = """Help: <b>Extra Modules</b>
+• /connections - <code>list all your connections</code>"""  
+    IMDB_TXT = """Help: <b>IMDb</b>
+
+<b>About:</b>
+Get detailed information about movies and TV shows directly from IMDb.
+
+<b>Command and Usage:</b>
+• /imdb <b>&lt;movie name&gt;</b> - <code>Get the film information from IMDb source.</code>"""
+    EXTRA_TXT = """Help: <b>Extra Modules</b>
 
 <b>NOTE:</b>
-these are the extra features of Movie World
+these are the extra features of Eren Yeager
 
 <b>Commands and Usage:</b>
 • /id - <code>get id of a specifed user.</code>
 • /info  - <code>get information about a user.</code>
 • /imdb  - <code>get the film information from IMDb source.</code>
 • /search  - <code>get the film information from various sources.</code>"""    
-    URL_SHORTNER_TXT = """Help: <b>URL Shortner</b>
-
-Some URLs is Shortner
-
-<b>Commands and Usage:</b>
-• /short <code>(link)</code> - I will send the shorted links.
-
-<b>Example:</b>
-<code>/short https://t.me/mwmoviespro</code>
-
-<b>NOTE:</b>
-• IMDb should have admin privillage.
-• These commands works on both pm and group.
-• These commands can be used by any group member."""    
     TGRAPH_TXT = """Help: <b>TELEGRAPH & PASTE</b>
 
 <b>NOTE:</b>
@@ -135,7 +126,7 @@ To Get Sticker ID
  ⭕ 𝙃𝙤𝙬 𝙏𝙤 𝙐𝙨𝙚
   
 ◉ Reply To Any Sticker [/stickerid]"""    
-    RPT_TXT = """Help: <b>Report To Group Admins<b>
+    REPORT_TXT = """Help: <b>Report To Group Admins<b>
 This Feature is Used for Contacting Or Reporting Issues To Group Admins That The Bot Present 
 This Comaand Only Used In Groups
 
@@ -156,7 +147,7 @@ This Comaand Only Used In Groups
 • IMDb should have admin privillage.
 • These commands works on group.
 • These commands can be used by Only admin."""    
-    PIN_MESSAGE_TXT = """Help: <b>Pin Message</b>
+    PIN_TXT = """Help: <b>Pin Message</b>
 
 All the pin related commands can be found here; keep your chat up to date on the latest news with a simple pinned message!
 
@@ -168,41 +159,32 @@ All the pin related commands can be found here; keep your chat up to date on the
 • IMDb should have admin privillage.
 • These commands works only group.
 • These commands can be used by Only admin.""" 
-    LOGO_TXT = """⋯⋯⋯⋯⋯⋯⋯⋯⋯⋯⋯⋯⋯⋯\nᴍᴏᴠɪᴇ ʀᴇǫᴜᴇꜱᴛ ꜰᴏʀᴍᴀᴛ\n⋯⋯⋯⋯⋯⋯⋯⋯⋯⋯⋯⋯⋯⋯\n\nɢᴏ ᴛᴏ ɢᴏᴏɢʟᴇ ➠ ᴛʏᴘᴇ ᴍᴏᴠɪᴇ ɴᴀᴍᴇ ➠ ᴄᴏᴘʏ ᴄᴏʀʀᴇᴄᴛ ɴᴀᴍᴇ ➠ ᴘᴀꜱᴛᴇ ᴛʜɪꜱ ɢʀᴏᴜᴘ\n\nᴇxᴀᴍᴘʟᴇ : ᴋɢꜰ ᴄʜᴀᴘᴛᴇʀ 2  2022\n\n🚯 ᴅᴏɴᴛ ᴜꜱᴇ ➠ ':(!,./)\n\n©  Movie World"""   
-    PASTE_TXT = """Help: <b>Paste</b>
+    LOGO_TXT = """Help: <b>Logo</b>
 
-Paste some texts or documents on a website!
-
-<b>Commands and Usage:</b>
-• /paste [text] - paste the given text on Pasty
-• /paste [reply] - paste the replied text on Pasty
-
-<b>NOTE:</b>
-• IMDb should have admin privillage.
-• These commands works on both pm and group.
-• These commands can be used by any group member."""    
-    GTRANS_TXT = """Help: <b>Google Translator</b>
-
-Translate texts to a specific language!
+Create a custom logo from text!
 
 <b>Commands and Usage:</b>
-• /tr [language code][reply] - translate replied message to specific language.
+• /logo [text] - <code>Creates a logo with the given text.</code>
 
 <b>NOTE:</b>
-• IMDb should have admin privillage.
-• These commands works on both pm and group.
-• IMDb can translate texts to 200+ languages."""      
-    IMAGE_TXT = """➤ 𝐇𝐞𝐥𝐩: Photo
-    
-𝚃𝚑𝚒𝚜 𝚌𝚘𝚖𝚖𝚊𝚗𝚍 𝚑𝚎𝚕𝚙𝚜 𝚢𝚘𝚞 𝚝𝚘 𝚎𝚍𝚒𝚝 𝚒𝚖𝚊𝚐𝚎 𝚟𝚎𝚛𝚢 𝚎𝚊𝚜𝚒𝚕𝚢
+• This command works in both PM and groups.
+• This command can be used by any group member."""
+    TIPS_TXT = """<b>💡 How to Get the Best Results</b>
 
-<b>IMPORTANT<b>
-Select your required mode from below! \n 𝚃𝚘 𝚆𝚘𝚛𝚔 𝚃𝚑𝚒𝚜 𝙵𝚎𝚊𝚝𝚞𝚛𝚎 𝙿𝚕𝚎𝚊𝚜𝚎 𝚂𝚎𝚗𝚝 𝚃𝚑𝚎 𝙸𝚖𝚊𝚐𝚎 𝚏𝚘𝚛 𝙴𝚍𝚒𝚝.
+To help me find your movie, please send the **exact, correct title**.
 
-➤ 𝐂𝐨𝐦𝐦𝐚𝐧𝐝𝐬 𝐚𝐧𝐝 𝐔𝐬𝐚𝐠𝐞:
+1.  **Check Google** for the movie's official name and year.
+2.  **Copy and paste** the correct name into this group.
 
-➪ 𝖩𝗎𝗌𝗍 𝗌𝖾𝗇𝖽 𝗆𝖾 𝖺 𝗂𝗆𝖺𝗀𝖾 𝗍𝗈 𝖾𝖽𝗂𝗍 ✨
-"""   
+<b>✅ Correct Example:</b>
+<code>KGF Chapter 2 2022</code>
+
+<b>❌ Incorrect Example:</b>
+<code>kgf 2!!</code>
+<code>kgf chapter 2, 2022</code>
+
+<b>Important:</b> Please do not use punctuation (like <code>! , . /</code>) as it can confuse the search.
+"""
     FILE_TXT = """➤ 𝐇𝐞𝐥𝐩: 𝖥𝗂𝗅𝖾 𝖲𝗍𝗈𝗋𝖾
  
 𝚆𝚒𝚝𝚑 𝚝𝚑𝚒𝚜 𝚌𝚘𝚖𝚖𝚊𝚍𝚜 𝚒 𝚌𝚊𝚗 𝚜𝚝𝚘𝚛𝚎 𝚏𝚒𝚕𝚎𝚜 𝚊𝚗𝚍 𝚐𝚒𝚟𝚎 𝚢𝚘𝚞 𝚊 𝚜𝚑𝚊𝚛𝚎𝚊𝚋𝚕𝚎 𝚕𝚒𝚗𝚔 𝚠𝚒𝚝𝚑 𝚝𝚑𝚒𝚜 𝚕𝚒𝚗𝚔 𝚒 𝚌𝚊𝚗 𝚜𝚑𝚊𝚛𝚎 𝚝𝚑𝚊𝚝 𝚏𝚒𝚕𝚎𝚜 𝚢𝚘𝚞 𝚐𝚒𝚟𝚎 𝚖𝚎 𝚏𝚛𝚘𝚖 𝚊𝚗𝚢 𝚌𝚑𝚊𝚗𝚗𝚎𝚕 𝚠𝚒𝚝𝚑𝚘𝚞𝚝 𝚊𝚍𝚍𝚒𝚗𝚐 𝚖𝚎
@@ -228,15 +210,6 @@ Helps you to know your ping 🚶🏼‍♂️
 • This commands can be used in pms and groups
 • This commands can be used buy everyone in the groups and bots pm
 • Share us for more features"""
-    TORRENT_TXT = """<b>Torrent Search</b>
-
-<b>Commands and Usage:</b>
-• /torrent or /tor <movie name>: Get Your Torrent Link From Various Resource.
-
-<b>NOTE:</b>
-• IMDb should have admin privillage.
-• These commands works on both pm and group.
-• These commands can be used by any group member."""
     PURGE_TXT = """Help: <b>Purge</b>
 
 Need to delete lots of messages? That's what purges are for!
@@ -272,21 +245,27 @@ This module only works for my admins
 • IMDb should have admin privillage.
 • These commands works on both pm and group.
 • These commands can be used by any group member."""
-    MEMES_TXT = """Help: <b>FUN</b>
+    FUN_TXT = """<b>🎲 Fun & Games</b>
 
-Some dank memes for fun or whatever!
+Here are some fun animated commands to pass the time.
 
-<b>Commands and Usage:</b>
-• /throw or /dart - t𝗈 m𝖺𝗄𝖾 drat 
-• /roll or /dice - roll the dice 
-• /goal or /shoot - to make a goal or shoot
-• /luck or /cownd - Spin the Lucky
+<b>Commands:</b>
+• 🎯 <b>/throw</b> or <b>/dart</b>
+  Sends an animated dart throw.
+
+• 🎲 <b>/roll</b> or <b>/dice</b>
+  Rolls a random die.
+
+• ⚽ <b>/goal</b> or <b>/shoot</b>
+  Tries to score a goal.
+
+• 🎰 <b>/luck</b> or <b>/cownd</b>
+  Spins the slot machine. Good luck!
 
 <b>NOTE:</b>
-• IMDb should have admin privillage.
-• These commands works on both pm and group.
-• These commands can be used by any group member."""
-    INFO_TXT = """Help: <b>Json</b>
+• These commands can be used by anyone, in groups or in a private chat.
+"""
+    JSON_TXT = """Help: <b>Json</b>
 
 <b>Commands and Usage:</b>
 • /json - <code>get the json details of a message.<code>
@@ -303,72 +282,11 @@ A module to convert text to voice with language support.
 
 <b>Commands and Usage:</b>
 • /tts - Reply to any text message with language code to convert as audio.
-
-<b>NOTE:</b>
-• IMDb should have admin privillage.
-• These commands works on both pm and group.
-• These commands can be used by any group member."""
-    VIDE_TXT = """Help: <b>VIDEO</b>
-Video download modules, for those who love Video.    
-    
-<b>Commands and Usage:</b>
-• /video (songname) - download video from yt servers.
-
-<b>NOTE:</b>
-• IMDb should have admin privillage.
-• These commands works on both pm and group.
-• These commands can be used by any group member."""
-    MUSIC_TXT = """Help: <b>Music</b>
-
-Music download modules, for those who love music.
-
-<b>Commands and Usage:</b>
-• /song  (songname) - download song from yt servers.
-
-<b>YouTube Thumbnail Download</b>
-• /ytthumb (youtube link)
-<b>Example:</b> <code>/ytthumb https://youtu.be/h6PtzFYaMxQ</code>
-
-<b>NOTE:</b>
-• IMDb should have admin privillage.
-• These commands works on both pm and group.
-• These commands can be used by any group member."""
-    SHARE_TXT = """Help: <b>Sharing Text Maker</b>
-
-a bot to create a link to share text in the telegram.
-
-<b>Commands and Usage:</b>
-• /share (text or reply to message)
-
-<b>NOTE:</b>
-• IMDb should have admin privillage.
-• These commands works on both pm and group.
-• These commands can be used by any group member."""
-
-    TTS_TXT = """
-🎙️ **Text-to-Speech Bot Help**
-
-**Usage:**
-• Reply to any text message and use `/tts`
-• Specify language: `/tts malayalam`
-
-**Indian Languages:** 🇮🇳
-• malayalam - മലയാളം
-• hindi - हिन्दी  
-• tamil - தமிழ்
-• bengali - বাংলা
-• telugu - తెలుగు
-• marathi - मराठी
-• gujarati - ગુજરાતી
-• kannada - ಕನ್ನಡ
-• punjabi - ਪੰਜਾਬੀ
-• urdu - اردو
-
-**English Voices:**
+English Voices:
 • nova, alloy, ash, coral, echo
 • fable, onyx, sage, shimmer
 
-**Examples:**
+Examples:
 • `/tts malayalam` - Convert to Malayalam
 • `/tts hindi` - Convert to Hindi
 • `/tts coral` - Use coral English voice
@@ -378,7 +296,11 @@ a bot to create a link to share text in the telegram.
 • Auto language detection from text
 • Supports 10+ Indian languages
 • Maximum 3000 characters per message
-    """
+
+<b>NOTE:</b>
+• IMDb should have admin privillage.
+• These commands works on both pm and group.
+• These commands can be used by any group member."""
     KICK_TXT = """Help: <b>Zombies</b>
 
 <b>Kick incative members from group. Add me as admin with ban users permission in group.</b>
@@ -412,12 +334,12 @@ a bot to create a link to share text in the telegram.
 ★ 𝚃𝙾𝚃𝙰𝙻 𝙲𝙷𝙰𝚃𝚂: <code>{}</code>
 ★ 𝚄𝚂𝙴𝙳 𝚂𝚃𝙾𝚁𝙰𝙶𝙴: <code>{}</code> 𝙼𝚒𝙱
 ★ 𝙵𝚁𝙴𝙴 𝚂𝚃𝙾𝚁𝙰𝙶𝙴: <code>{}</code> 𝙼𝚒𝙱"""
-    LOG_TEXT_G = """#NewGroup
+    LOG_TEXT_G = """#NewGroup <a href=https://t.me/{}>{}</a>
 Group = {}(<code>{}</code>)
 Total Members = <code>{}</code>
 Added By - {}
 """
-    LOG_TEXT_P = """#NewUser
+    LOG_TEXT_P = """#NewUser <a href=https://t.me/{}>{}</a>
 ID - <code>{}</code>
 Name - {}
 """

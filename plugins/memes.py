@@ -1,38 +1,40 @@
 from pyrogram import Client, filters
 
-# AESTHETIC------------ https://telegram.me/lord1of5darkness9 ------------ #
-
 def aesthetify(string):
     PRINTABLE_ASCII = range(0x21, 0x7f)
     for c in string:
-        c = ord(c)
-        if c in PRINTABLE_ASCII:
-            c += 0xFF00 - 0x20
-        elif c == ord(" "):
-            c = 0x3000
-        yield chr(c)
+        c_ord = ord(c)
+        if c_ord in PRINTABLE_ASCII:
+            c_ord += 0xFF00 - 0x20
+        elif c_ord == ord(" "):
+            c_ord = 0x3000
+        yield chr(c_ord)
 
 
 @Client.on_message(
     filters.command(["ask"]))
 async def aesthetic(client, message):
     status_message = await message.reply_text("What the hell do you want??\nപേടിച്ചു പോയോ ഞാൻ വെറുതേ പറഞ്ഞത")
-    text = "".join(str(e) for e in message.command[1:])
+    
+    if len(message.command) < 2:
+        await status_message.edit("...but you didn't give me any text.")
+        return
+
+    text = " ".join(message.command[1:])
     text = "".join(aesthetify(text))
+    
+    if not text:
+        await status_message.edit("Couldn't convert that text.")
+        return
+        
     await status_message.edit(text)
 
-# DART------------ https://telegram.me/Josprojects ------------ #
-
-# EMOJI CONSTANTS
 DART_E_MOJI = "🎯"
-# EMOJI CONSTANTS
-
 
 @Client.on_message(
     filters.command(["throw", "dart"])
 )
 async def throw_dart(client, message):
-    """ /throw an @AnimatedDart """
     rep_mesg_id = message.message_id
     if message.reply_to_message:
         rep_mesg_id = message.reply_to_message.message_id
@@ -43,18 +45,12 @@ async def throw_dart(client, message):
         reply_to_message_id=rep_mesg_id
     )
 
-# DICE------------ https://telegram.me/Josprojects ------------ #
-
-# EMOJI CONSTANTS
 DICE_E_MOJI = "🎲"
-# EMOJI CONSTANTS
-
 
 @Client.on_message(
     filters.command(["roll", "dice"])
 )
 async def roll_dice(client, message):
-    """ @RollADie """
     rep_mesg_id = message.message_id
     if message.reply_to_message:
         rep_mesg_id = message.reply_to_message.message_id
@@ -65,17 +61,12 @@ async def roll_dice(client, message):
         reply_to_message_id=rep_mesg_id
     )
 
-# LUCK------------ https://telegram.me/Josprojects ------------ #
-
-# EMOJI CONSTANTS
 TRY_YOUR_LUCK = "🎰"
-# EMOJI CONSTANTS
 
 @Client.on_message(
     filters.command(["luck", "cownd"])
 )
 async def luck_cownd(client, message):
-    """ /luck an @animatedluck """
     rep_mesg_id = message.message_id
     if message.reply_to_message:
         rep_mesg_id = message.reply_to_message.message_id
@@ -86,17 +77,12 @@ async def luck_cownd(client, message):
         reply_to_message_id=rep_mesg_id
     )
 
-# GOAL------------ https://telegram.me/Josprojects ------------ #
-
-# EMOJI CONSTANTS
 GOAL_E_MOJI = "⚽"
-# EMOJI CONSTANTS
 
 @Client.on_message(
     filters.command(["goal", "shoot"])
 )
-async def roll_dice(client, message):
-    """ @Goal """
+async def shoot_goal(client, message):
     rep_mesg_id = message.message_id
     if message.reply_to_message:
         rep_mesg_id = message.reply_to_message.message_id
