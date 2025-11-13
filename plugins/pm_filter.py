@@ -344,6 +344,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
             alert = alerts[int(i)]
             alert = alert.replace("\\n", "\n").replace("\\t", "\t")
             await query.answer(alert, show_alert=True)
+            
     if query.data.startswith("file"):
         ident, key = query.data.split("#")
         logger.info(f"User {query.from_user.id} clicked file button. Ident: {ident}, Key: {key}")
