@@ -245,20 +245,26 @@ This module only works for my admins
 • IMDb should have admin privillage.
 • These commands works on both pm and group.
 • These commands can be used by any group member."""
-    FUN_TXT = """Help: <b>FUN</b>
+    FUN_TXT = """<b>🎲 Fun & Games</b>
 
-Some dank memes for fun or whatever!
+Here are some fun animated commands to pass the time.
 
-<b>Commands and Usage:</b>
-• /throw or /dart - t𝗈 m𝖺𝗄𝖾 drat 
-• /roll or /dice - roll the dice 
-• /goal or /shoot - to make a goal or shoot
-• /luck or /cownd - Spin the Lucky
+<b>Commands:</b>
+• 🎯 <b>/throw</b> or <b>/dart</b>
+  Sends an animated dart throw.
+
+• 🎲 <b>/roll</b> or <b>/dice</b>
+  Rolls a random die.
+
+• ⚽ <b>/goal</b> or <b>/shoot</b>
+  Tries to score a goal.
+
+• 🎰 <b>/luck</b> or <b>/cownd</b>
+  Spins the slot machine. Good luck!
 
 <b>NOTE:</b>
-• IMDb should have admin privillage.
-• These commands works on both pm and group.
-• These commands can be used by any group member."""
+• These commands can be used by anyone, in groups or in a private chat.
+"""
     JSON_TXT = """Help: <b>Json</b>
 
 <b>Commands and Usage:</b>
