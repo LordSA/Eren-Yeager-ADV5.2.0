@@ -1,51 +1,33 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
-
-from pyrogram import (
-    filters
-)
-from info import (
-    ADMINS
-)
+from pyrogram import filters, enums
+from info import ADMINS
 from plugins.Tools.help_func.admin_check import admin_check
 
-
 def f_sudo_filter(filt, client, message):
-    return bool(
-        message.from_user.id in ADMINS
-    )
-
+    if message.from_user and message.from_user.id in ADMINS:
+        return True
+    return False
 
 sudo_filter = filters.create(
     func=f_sudo_filter,
     name="SudoFilter"
 )
 
+def f_owner_filter(filt, client, message):
+    if ADMINS and message.from_user and message.from_user.id in ADMINS:
+        return True
+    return False
 
-def onw_filter(filt, client, message):
-    if ADMINS:
-        return bool(
-            True # message.from_user.id in ADMINS
-        )
-    else:
-        return bool(
-            message.from_user and
-            message.from_user.is_self
-        )
-
-
-f_onw_fliter = filters.create(
-    func=onw_filter,
-    name="OnwFilter"
+owner_filter = filters.create(
+    func=f_owner_filter,
+    name="OwnerFilter"
 )
 
-
-async def admin_filter_f(filt, client, message):
+async def f_admin_filter(filt, client, message):
+    if message.chat.type == enums.ChatType.PRIVATE:
+        return False
     return await admin_check(message)
 
-
-admin_fliter = filters.create(
-    func=admin_filter_f,
+admin_filter = filters.create(
+    func=f_admin_filter,
     name="AdminFilter"
 )
