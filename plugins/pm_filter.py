@@ -1285,7 +1285,7 @@ async def auto_filter(client, msg, spoll=False):
         logger.exception(f"CRITICAL ERROR in auto_filter: Failed during BUTTON building: {e}")
         print(f"[DEBUG] auto_filter: FAILED at button building: {e}")
         return # Can't continue if buttons fail
-
+    sent_message = None
     # --- 3. GETTING IMDB DATA AND FORMATTING CAPTION ---
     try:
         print("[DEBUG] auto_filter: Getting IMDB data...")
@@ -1347,7 +1347,7 @@ async def auto_filter(client, msg, spoll=False):
         print(f"[DEBUG] auto_filter: FAILED at IMDB/Caption: {e}")
         # FALLBACK: Send a simple message if IMDB/Template fails
         try:
-            await message.reply_text(
+            sent_message = await message.reply_text(
                 f"Here is what I found for your query `{search}`.\n\n_(An error occurred while fetching full details.)_",
                 reply_markup=InlineKeyboardMarkup(btn) # btn was built in the first try block
             )
@@ -1361,26 +1361,32 @@ async def auto_filter(client, msg, spoll=False):
         if imdb and imdb.get('poster'):
             print("[DEBUG] auto_filter: Sending with photo...")
             try:
-                await message.reply_photo(photo=imdb.get('poster'), caption=cap[:1000],
+                sent_message = await message.reply_photo(photo=imdb.get('poster'), caption=cap[:1000],
                                           reply_markup=InlineKeyboardMarkup(btn))
             except (MediaEmpty, PhotoInvalidDimensions, WebpageMediaEmpty):
                 print("[DEBUG] auto_filter: Photo failed, trying smaller poster.")
                 pic = imdb.get('poster')
                 poster = pic.replace('.jpg', "._V1_UX360.jpg") # Fixed your typo here
-                await message.reply_photo(photo=poster, caption=cap[:1000], reply_markup=InlineKeyboardMarkup(btn))
+                sent_message = await message.reply_photo(photo=poster, caption=cap[:1000], reply_markup=InlineKeyboardMarkup(btn))
             except Exception as e:
                 logger.warning(f"Sending photo failed ({e}), sending as text.")
                 print(f"[DEBUG] auto_filter: Photo failed ({e}), sending text.")
                 await message.reply_text(cap, reply_markup=InlineKeyboardMarkup(btn))
         else:
             print("[DEBUG] auto_filter: Sending as text (no poster)...")
-            await message.reply_text(cap, reply_markup=InlineKeyboardMarkup(btn))
+            sent_message = await message.reply_text(cap, reply_markup=InlineKeyboardMarkup(btn))
             
         print("[DEBUG] auto_filter: Reply sent successfully.")
         
         if spoll:
             await msg.message.delete()
-            
+        if sent_message :
+            await asyncio.sleep(300)
+            try:
+                await sent_message.delete()
+                logger.info(f"Auto-deleted filter reply {sent_message.id}")
+            except Exception as e:
+                logger.warning(f"Could not auto-delete filter reply: {e}")
     except Exception as e:
         logger.exception(f"CRITICAL ERROR in auto_filter: Failed to send reply: {e}")
         print(f"[DEBUG] auto_filter: FAILED at sending reply: {e}")

@@ -202,6 +202,12 @@ async def get_settings(group_id):
     This function is already perfect!
     It correctly uses the async db object.
     """
+    try:
+        group_id = int(group_id)
+    except ValueError:
+        logger.error(f"Invalid Group_id typr: {group_id}")
+        return DEFAULT_SETTINGS.copy()
+    
     settings = temp.SETTINGS.get(group_id)
     if settings is None:
         settings = DEFAULT_SETTINGS.copy()
@@ -212,6 +218,11 @@ async def get_settings(group_id):
     return settings
     
 async def save_group_settings(group_id, key, value):
+    try:
+        group_id = int(group_id)
+    except ValueError:
+        logger.error(f"Invalid group_id type for saving: {group_id}")
+        return
     current = await get_settings(group_id)
     current[key] = value
     temp.SETTINGS[group_id] = current
