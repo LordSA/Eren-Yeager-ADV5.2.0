@@ -58,17 +58,18 @@ app = Bot()
 async def check_update(client: Client, message: Message):
     owner = message.from_user.id
     await client.send_message(owner, "🔍 Checking for updates...")
-    git_pull = subprocess.run(["git", "pull"], capture_output=True, text=True)
-    git_output = git_pull.stdout + git_pull.stderr
+    stdout, stderr = await run_shell_command("git pull origin main") 
+    git_output = stdout + "\n" + stderr
 
     if "Already up to date." in git_output:
         await client.send_message(owner, "✅ Bot is already up-to-date.")
     else:
         await client.send_message(owner, f"📦 Update available:\n<code>{git_output}</code>")
-        await client.send_message(LOG_CHANNEL, f"📦 Update check logs:\n<code>{git_output}</code>")
+        if LOG_CHANNEL:
+            await client.send_message(LOG_CHANNEL, f"📦 Update check logs:\n<code>{git_output}</code>")
 
 # ---------------- UPDATE BOT ----------------
-@Client.on_message(filters.command("update") & filters.user(ADMINS))
+@app.on_message(filters.command("update") & filters.user(ADMINS))
 async def update_bot(client: Client, message: Message):
     
     status_message = await message.reply_text("🚀 **Update started...**")
@@ -78,6 +79,7 @@ async def update_bot(client: Client, message: Message):
             "⚠️ **Error:** `PM2_BOT_NAME` is not set in your env. Cannot restart."
         )
 
+    # [FIX] Changed 'testing' back to 'main'
     await status_message.edit_text("🌍 **Fetching updates from Git...**\n\n`git fetch --all && git reset --hard origin/main`")
 
     update_cmd = "git fetch --all && git reset --hard origin/main"
