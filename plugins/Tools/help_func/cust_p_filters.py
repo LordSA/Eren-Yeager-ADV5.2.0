@@ -28,7 +28,7 @@ owner_filter = filters.create(
     name="OwnerFilter"
 )
 
-async def f_admin_filter(client, message):
+async def f_admin_filter(filt, client, message):
     if message.chat.type == enums.ChatType.PRIVATE:
         return False
     return await admin_check(message)

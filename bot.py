@@ -97,7 +97,7 @@ async def update_bot(client: Client, message: Message):
         await status_message.edit_text(f"✅ **Git pull successful.**\n\n📦 Installing requirements...")
         
         pip_command = f"{sys.executable} -m pip install -r requirements.txt"
-        await run_shell_command(pip_command)
+        stdout_pip, stderr_pip = await run_shell_command(pip_command)
 
         await status_message.edit_text(f"✅ **Requirements installed.**\n\n🔄 Restarting bot via PM2...")
         await asyncio.sleep(1) 
