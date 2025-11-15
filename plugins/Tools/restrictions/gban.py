@@ -1,16 +1,18 @@
 from pyrogram import Client, filters
-from plugins.Tools.help_func.admin_check import admin_check
+from datetime import datetime, timedelta
+
+from plugins.Tools.help_func.cust_p_filters import admin_filter
 from plugins.Tools.help_func.extract_user import extract_user
 from plugins.Tools.help_func.string_handling import extract_time
 
+@Client.on_message(filters.command("gban") & admin_filter)
+async def ban_user(client, message):
+    
+    user_id, user_first_name = await extract_user(client, message)
 
-@Client.on_message(filters.command("gban"))
-async def ban_user(_, message):
-    is_admin = await admin_check(message)
-    if not is_admin:
+    if not user_id:
+        await message.reply_text("I can't find a user. Reply to someone or provide their user ID/username.")
         return
-
-    user_id, user_first_name = extract_user(message)
 
     try:
         await message.chat.kick_member(
@@ -21,42 +23,33 @@ async def ban_user(_, message):
             str(error)
         )
     else:
-        if str(user_id).lower().startswith("@"):
-            await message.reply_text(
-                "Someone else is dusting off..! "
-                f"{user_first_name}"
-                " Is forbidden."
-            )
-        else:
-            await message.reply_text(
-                "Someone else is dusting off..! "
-                f"<a href='tg://user?id={user_id}'>"
-                f"{user_first_name}"
-                "</a>"
-                " Is forbidden."
-            )
+        await message.reply_text(
+            f"Someone else is dusting off..! "
+            f"<a href='tg://user?id={user_id}'>"
+            f"{user_first_name}"
+            "</a>"
+            " Is forbidden."
+        )
 
+@Client.on_message(filters.command("gtban") & admin_filter)
+async def temp_ban_user(client, message):
 
-@Client.on_message(filters.command("gtban"))
-async def temp_ban_user(_, message):
-    is_admin = await admin_check(message)
-    if not is_admin:
+    if len(message.command) < 3:
+        await message.reply_text("<b>Usage:</b> /gtban [user_id/username] [time]\n<b>Example:</b> /gtban @user 10m")
         return
 
-    if not len(message.command) > 1:
+    user_id, user_first_name = await extract_user(client, message)
+
+    if not user_id:
+        await message.reply_text("I can't find a user. Reply to someone or provide their user ID/username.")
         return
 
-    user_id, user_first_name = extract_user(message)
-
-    until_date_val = extract_time(message.command[1])
+    time_val = message.command[2]
+    until_date_val = extract_time(time_val)
+    
     if until_date_val is None:
         await message.reply_text(
-            (
-                "Invalid time type specified. "
-                "Expected m, h, or d, Got it: {}"
-            ).format(
-                message.command[1][-1]
-            )
+            f"Invalid time type specified. Expected m, h, or d. Got: {time_val}"
         )
         return
 
@@ -70,17 +63,10 @@ async def temp_ban_user(_, message):
             str(error)
         )
     else:
-        if str(user_id).lower().startswith("@"):
-            await message.reply_text(
-                "Someone else is dusting off..! "
-                f"{user_first_name}"
-                f" banned for {message.command[1]}!"
-            )
-        else:
-            await message.reply_text(
-                "Someone else is dusting off..! "
-                f"<a href='tg://user?id={user_id}'>"
-                "Lavane"
-                "</a>"
-                f" banned for {message.command[1]}!"
-            )
+        await message.reply_text(
+            f"Someone else is dusting off..! "
+            f"<a href='tg://user?id={user_id}'>"
+            f"{user_first_name}"
+            "</a>"
+            f" banned for {time_val}!"
+        )

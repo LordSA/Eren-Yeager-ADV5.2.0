@@ -1,97 +1,66 @@
-from pyrogram import (
-    Client,
-    filters
-)
-from pyrogram.types import (
-    ChatPermissions
-)
-from plugins.Tools.help_func.admin_check import admin_check
+from pyrogram import Client, filters, enums
+from pyrogram.types import ChatPermissions, Message
+from datetime import datetime, timedelta
+
+from plugins.Tools.help_func.cust_p_filters import admin_filter
 from plugins.Tools.help_func.extract_user import extract_user
 from plugins.Tools.help_func.string_handling import extract_time
 
+@Client.on_message(filters.command("mute") & admin_filter)
+async def mute_user(client: Client, message: Message):
+    
+    user_id, user_first_name = await extract_user(client, message)
 
-@Client.on_message(filters.command("mute"))
-async def mute_user(_, message):
-    is_admin = await admin_check(message)
-    if not is_admin:
+    if not user_id:
+        await message.reply_text("I can't find a user. Reply to someone or provide their user ID/username.")
         return
-
-    user_id, user_first_name = extract_user(message)
 
     try:
         await message.chat.restrict_member(
             user_id=user_id,
-            permissions=ChatPermissions(
-            )
+            permissions=ChatPermissions()
         )
     except Exception as error:
-        await message.reply_text(
-            str(error)
-        )
+        await message.reply_text(str(error))
     else:
-        if str(user_id).lower().startswith("@"):
-            await message.reply_text(
-                "👍🏻 "
-                f"{user_first_name}"
-                " ആ വാഴയുടെ വായ അടച്ചു! 🤐"
-            )
-        else:
-            await message.reply_text(
-                "👍🏻 "
-                f"<a href='tg://user?id={user_id}'>"
-                "Of lavender"
-                "</a>"
-                " അവൻ്റെ വായാ അടച്ചിട്ടുണ്ട്! 🤐"
-            )
+        await message.reply_text(
+            f"👍🏻 <a href='tg://user?id={user_id}'>{user_first_name}</a>"
+            f" അവൻ്റെ വായാ അടച്ചിട്ടുണ്ട്! 🤐"
+        )
 
+@Client.on_message(filters.command("tmute") & admin_filter)
+async def temp_mute_user(client: Client, message: Message):
 
-@Client.on_message(filters.command("tmute"))
-async def temp_mute_user(_, message):
-    is_admin = await admin_check(message)
-    if not is_admin:
+    if len(message.command) < 3:
+        await message.reply_text("<b>Usage:</b> /tmute [user_id/username] [time]\n<b>Example:</b> /tmute @user 10m")
         return
 
-    if not len(message.command) > 1:
+    user_id, user_first_name = await extract_user(client, message)
+
+    if not user_id:
+        await message.reply_text("I can't find a user. Reply to someone or provide their user ID/username.")
         return
 
-    user_id, user_first_name = extract_user(message)
+    time_val = message.command[2]
+    until_date_val = extract_time(time_val)
 
-    until_date_val = extract_time(message.command[1])
     if until_date_val is None:
         await message.reply_text(
-            (
-                "Invalid time type specified. "
-                "Expected m, h, or d, Got it: {}"
-            ).format(
-                message.command[1][-1]
-            )
+            f"Invalid time type specified. Expected m, h, or d. Got: {time_val}"
         )
         return
 
     try:
         await message.chat.restrict_member(
             user_id=user_id,
-            permissions=ChatPermissions(
-            ),
+            permissions=ChatPermissions(),
             until_date=until_date_val
         )
     except Exception as error:
-        await message.reply_text(
-            str(error)
-        )
+        await message.reply_text(str(error))
     else:
-        if str(user_id).lower().startswith("@"):
-            await message.reply_text(
-                "മിണ്ടാതെ ഇരി കഴുതെ! 😠"
-                f"{user_first_name}"
-                f" muted for {message.command[1]}!"
-            )
-        else:
-            await message.reply_text(
-                "മിണ്ടാതെ ഇരി കഴുതേ! 😠"
-                f"<a href='tg://user?id={user_id}'>"
-                "Of lavender"
-                "</a>"
-                " Mouth "
-                f" muted for {message.command[1]}!"
-            )
+        await message.reply_text(
+            f"മിണ്ടാതെ ഇരി കഴുതേ! 😠\n"
+            f"<a href='tg://user?id={user_id}'>{user_first_name}</a>"
+            f" muted for {time_val}!"
+        )
