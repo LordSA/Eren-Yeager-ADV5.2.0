@@ -1,3 +1,4 @@
+import sys
 import logging
 import logging.config
 import subprocess
@@ -8,10 +9,8 @@ from info import LOG_CHANNEL, ADMINS, PM2_BOT_NAME, SESSION, API_ID, API_HASH, B
 
 # Get logging configurations
 logging.config.fileConfig('logging.conf')
-logging.getLogger().setLevel(logging.INFO)
-logging.getLogger("pyrogram").setLevel(logging.ERROR)
-logging.getLogger("imdbpy").setLevel(logging.ERROR)
 logger = logging.getLogger(__name__)
+logger.info("Bot is starting with logging configured from file...")
 
 from pyrogram.raw.all import layer
 from database.ia_filterdb import Media

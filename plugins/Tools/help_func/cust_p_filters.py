@@ -1,6 +1,9 @@
 from pyrogram import filters, enums
+import logging
 from info import ADMINS
 from plugins.Tools.help_func.admin_check import admin_check
+
+logger = logging.getLogger(__name__)
 
 def f_sudo_filter(filt, client, message):
     if message.from_user and message.from_user.id in ADMINS:
@@ -13,12 +16,13 @@ sudo_filter = filters.create(
 )
 
 def f_owner_filter(filt, client, message):
-    if message.from_user:
-        is_admin = message.from_user.id in ADMINS
-        print(f"[Filter Debug] User: {message.from_user.id}, Is Admin: {is_admin}, ADMINS List: {ADMINS}")
-        
-    if ADMINS and message.from_user and message.from_user.id in ADMINS:
-        return True
+    user_id = message.from_user.id
+    logger.info(f"[Filter Debug] User trying command: {user_id}")
+    logger.info(f"[Filter Debug] ADMINS list: {ADMINS}")    
+    is_admin = user_id in ADMINS  
+    logger.info(f"[Filter Debug] Is user in ADMINS list? {is_admin}")
+    if is_admin:
+        return True      
     return False
 
 owner_filter = filters.create(
