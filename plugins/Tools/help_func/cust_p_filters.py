@@ -5,7 +5,7 @@ from plugins.Tools.help_func.admin_check import admin_check
 
 logger = logging.getLogger(__name__)
 
-def f_sudo_filter(filt, client, message):
+def f_sudo_filter(client, message):
     if message.from_user and message.from_user.id in ADMINS:
         return True
     return False
@@ -15,7 +15,7 @@ sudo_filter = filters.create(
     name="SudoFilter"
 )
 
-def f_owner_filter(filt, client, message):
+def f_owner_filter(client, message):
     user_id = message.from_user.id
     logger.info(f"[Filter Debug] User trying command: {user_id}")
     logger.info(f"[Filter Debug] ADMINS list: {ADMINS}")    
@@ -30,7 +30,7 @@ owner_filter = filters.create(
     name="OwnerFilter"
 )
 
-async def f_admin_filter(filt, client, message):
+async def f_admin_filter(client, message):
     if message.chat.type == enums.ChatType.PRIVATE:
         return False
     return await admin_check(message)
