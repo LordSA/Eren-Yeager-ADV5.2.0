@@ -323,13 +323,23 @@ async def channel_info(bot, message):
         await message.reply_document(file)
         os.remove(file)
 
+LOG_FILE = "TelegramBot.log"
+
 @Client.on_message(filters.command('logs') & filters.user(ADMINS))
-async def log_file(bot, message):
-    """Send log file"""
+async def log_file(client, message):
+    
+    if not os.path.exists(LOG_FILE):
+        await message.reply_text("Log file not found. It might not have been created yet.")
+        return
+        
+    if os.path.getsize(LOG_FILE) == 0:
+        await message.reply_text("Log file is currently empty.")
+        return
+
     try:
-        await message.reply_document('TelegramBot.log')
+        await message.reply_document(LOG_FILE)
     except Exception as e:
-        await message.reply(str(e))
+        await message.reply_text(str(e))
 
 @Client.on_message(filters.command('delete') & filters.user(ADMINS))
 async def delete(bot, message):
