@@ -35,14 +35,14 @@ DART_E_MOJI = "🎯"
     filters.command(["throw", "dart"])
 )
 async def throw_dart(client, message):
-    rep_mesg_id = message.message_id
+    rep_mesg_id = message.id
     if message.reply_to_message:
-        rep_mesg_id = message.reply_to_message.message_id
+        rep_mesg_id = message.reply_to_message.id
     await client.send_dice(
         chat_id=message.chat.id,
         emoji=DART_E_MOJI,
         disable_notification=True,
-        reply_to_message_id=rep_mesg_id
+        reply_to_id=rep_mesg_id
     )
 
 DICE_E_MOJI = "🎲"
@@ -51,14 +51,14 @@ DICE_E_MOJI = "🎲"
     filters.command(["roll", "dice"])
 )
 async def roll_dice(client, message):
-    rep_mesg_id = message.message_id
+    rep_mesg_id = message.id
     if message.reply_to_message:
-        rep_mesg_id = message.reply_to_message.message_id
+        rep_mesg_id = message.reply_to_message.id
     await client.send_dice(
         chat_id=message.chat.id,
         emoji=DICE_E_MOJI,
         disable_notification=True,
-        reply_to_message_id=rep_mesg_id
+        reply_to_id=rep_mesg_id
     )
 
 TRY_YOUR_LUCK = "🎰"
@@ -67,14 +67,14 @@ TRY_YOUR_LUCK = "🎰"
     filters.command(["luck", "cownd"])
 )
 async def luck_cownd(client, message):
-    rep_mesg_id = message.message_id
+    rep_mesg_id = message.id
     if message.reply_to_message:
-        rep_mesg_id = message.reply_to_message.message_id
+        rep_mesg_id = message.reply_to_message.id
     await client.send_dice(
         chat_id=message.chat.id,
         emoji=TRY_YOUR_LUCK,
         disable_notification=True,
-        reply_to_message_id=rep_mesg_id
+        reply_to_id=rep_mesg_id
     )
 
 GOAL_E_MOJI = "⚽"
@@ -83,12 +83,12 @@ GOAL_E_MOJI = "⚽"
     filters.command(["goal", "shoot"])
 )
 async def shoot_goal(client, message):
-    rep_mesg_id = message.message_id
+    rep_mesg_id = message.id
     if message.reply_to_message:
-        rep_mesg_id = message.reply_to_message.message_id
+        rep_mesg_id = message.reply_to_message.id
     await client.send_dice(
         chat_id=message.chat.id,
         emoji=GOAL_E_MOJI,
         disable_notification=True,
-        reply_to_message_id=rep_mesg_id
+        reply_to_id=rep_mesg_id
     )
