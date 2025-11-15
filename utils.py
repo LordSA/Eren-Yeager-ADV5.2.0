@@ -418,3 +418,18 @@ def humanbytes(size):
         size /= power
         n += 1
     return str(round(size, 2)) + " " + Dic_powerN[n] + 'B'
+
+
+async def run_shell_command(command: str) -> (str, str):
+    """
+    Runs a shell command asynchronously and returns stdout and stderr.
+    """
+    process = await asyncio.create_subprocess_shell(
+        command,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE
+    )
+    
+    stdout, stderr = await process.communicate()
+    
+    return stdout.decode('utf-8').strip(), stderr.decode('utf-8').strip()

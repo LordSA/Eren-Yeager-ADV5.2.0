@@ -28,7 +28,7 @@ USE_CAPTION_FILTER = is_enabled(environ.get('USE_CAPTION_FILTER', "False"), Fals
 PICS = (environ.get('PICS', 'https://telegra.ph/file/069618da52d3a9bb4d8b3.jpg https://telegra.ph/file/b13191e1fc00971d98c86.jpg https://telegra.ph/file/81ad488d6a2348ca50b8e.jpg https://telegra.ph/file/fe08fd13ba44be8d25095.jpg https://telegra.ph/file/b8819d6efabcf072b50db.jpg https://telegra.ph/file/0d7276910a9d72233e5b3.jpg https://telegra.ph/file/3d087b3acc3c45e022b19.jpg https://telegra.ph/file/fd3b166e18c24e398cff7.jpg https://telegra.ph/file/62a0cf76eb841834f3d36.jpg https://telegra.ph/file/8642e8704dae11e44e8bc.jpg https://telegra.ph/file/1dd1a78d0130079b55114.jpg https://telegra.ph/file/4becd8f9d7a21531f62bd.jpg https://telegra.ph/file/b67c3e4d77418a9e6aa22.jpg https://telegra.ph/file/938ee7f76c5c897732528.jpg https://telegra.ph/file/4e68427f5b4c6c89a2670.jpg https://telegra.ph/file/c277bdb945f4aa077d06c.jpg https://telegra.ph/file/d558d0d9b262fdea5bea1.jpg')).split()
 VIDS = (environ.get('VIDS', 'https://telegra.ph/file/e8c741846796427aa93a9.mp4 https://telegra.ph/file/863fb39bcabdd69a2ccda.mp4 https://telegra.ph/file/8f05c8bfff79cb7021022.mp4 https://telegra.ph/file/cd4a07a5fad5fdcf3084b.mp4 https://telegra.ph/file/fa5cb5c8c733a53abb488.mp4 https://telegra.ph/file/1612024aa1162ec5c0d9b.mp4 https://telegra.ph/file/971846d6b195589355d06.mp4 https://telegra.ph/file/fa6055633e209edb9d8ea.mp4 https://telegra.ph/file/9c3b6ddc4ab35ddef50a3.mp4')).split()
 # Admins, Channels & Users
-ADMINS = [int(admin) if id_pattern.search(admin) else admin for admin in environ.get('ADMINS', '').split()]
+ADMINS = [int(admin) for admin in environ.get('ADMINS', '').split()]
 CHANNELS = [int(ch) if id_pattern.search(ch) else ch for ch in environ.get('CHANNELS', '0').split()]
 auth_users = [int(user) if id_pattern.search(user) else user for user in environ.get('AUTH_USERS', '').split()]
 AUTH_USERS = (auth_users + ADMINS) if auth_users else []
@@ -59,7 +59,7 @@ FILE_STORE_CHANNEL = [int(ch) for ch in (environ.get('FILE_STORE_CHANNEL', '')).
 MELCOW_NEW_USERS = is_enabled((environ.get('MELCOW_NEW_USERS', "True")), True)
 PROTECT_CONTENT = is_enabled((environ.get('PROTECT_CONTENT', "False")), False)
 PUBLIC_FILE_STORE = is_enabled((environ.get('PUBLIC_FILE_STORE', "True")), True)
-VERSION = "5.2.4[Beta]"
+VERSION = "5.2.5[Beta]"
 
 
 LOG_STR = "Current Cusomized Configurations are:-\n"

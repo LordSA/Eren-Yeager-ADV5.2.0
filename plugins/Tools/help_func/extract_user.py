@@ -1,36 +1,33 @@
+from pyrogram import Client
 from pyrogram.types import Message
-from pyrogram import enums
-from typing import Tuple, Union
+from typing import Tuple, Optional
 
-def extract_user(message: Message) -> Tuple[Union[int, str], str]:
-    """extracts the user from a message"""
+async def extract_user(client: Client, message: Message) -> Tuple[Optional[int], Optional[str]]:
     user_id = None
     user_first_name = None
-
+    
     if message.reply_to_message:
         user_id = message.reply_to_message.from_user.id
         user_first_name = message.reply_to_message.from_user.first_name
-
+    
     elif len(message.command) > 1:
-        if (
-            len(message.entities) > 1 and
-            message.entities[1].type == enums.MessageEntityType.TEXT_MENTION
-        ):
-            required_entity = message.entities[1]
-            user_id = required_entity.user.id
-            user_first_name = required_entity.user.first_name
-        else:
-            user_id = message.command[1]
-            # don't want to make a request -_-
-            user_first_name = user_id
-
-        try:
-            user_id = int(user_id)
-        except ValueError:
-            pass
-
-    else:
-        user_id = message.from_user.id
-        user_first_name = message.from_user.first_name
-
-    return (user_id, user_first_name)
+        text = message.command[1]
+        
+        if text.startswith("@"):
+            try:
+                user = await client.get_users(text)
+                user_id = user.id
+                user_first_name = user.first_name
+            except Exception:
+                await message.reply_text("User not found.")
+                return None, None
+        
+        elif text.isdigit():
+            try:
+                user_id = int(text)
+                user_first_name = text 
+            except ValueError:
+                await message.reply_text("That's not a valid User ID.")
+                return None, None
+            
+    return user_id, user_first_name

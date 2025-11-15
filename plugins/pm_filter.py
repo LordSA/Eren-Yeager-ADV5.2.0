@@ -6,6 +6,7 @@ import uuid
 import random
 import logging
 import asyncio
+import pyrogram
 from pyrogram.errors.exceptions.bad_request_400 import MediaEmpty, PhotoInvalidDimensions, WebpageMediaEmpty
 from Script import script
 from database.connections_mdb import active_connection, all_connections, delete_connection, if_active, make_active, \
@@ -1485,7 +1486,7 @@ async def manual_filters(client, message, text=False):
                                 disable_web_page_preview=True,
                                 reply_to_message_id=reply_id)
                         else:
-                            button = eval(btn)
+                            button = eval(btn, globals())
                             await client.send_message(
                                 group_id,
                                 reply_text,
@@ -1501,7 +1502,7 @@ async def manual_filters(client, message, text=False):
                             reply_to_message_id=reply_id
                         )
                     else:
-                        button = eval(btn)
+                        button = eval(btn, globals())
                         await message.reply_cached_media(
                             fileid,
                             caption=reply_text or "",
