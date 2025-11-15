@@ -13,6 +13,10 @@ sudo_filter = filters.create(
 )
 
 def f_owner_filter(filt, client, message):
+    if message.from_user:
+        is_admin = message.from_user.id in ADMINS
+        print(f"[Filter Debug] User: {message.from_user.id}, Is Admin: {is_admin}, ADMINS List: {ADMINS}")
+        
     if ADMINS and message.from_user and message.from_user.id in ADMINS:
         return True
     return False
