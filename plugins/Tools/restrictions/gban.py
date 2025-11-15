@@ -15,7 +15,8 @@ async def ban_user(client, message):
         return
 
     try:
-        await message.chat.kick_member(
+        await client.ban_chat_member(
+            chat_id = message.chat.id,
             user_id=user_id
         )
     except Exception as error:
@@ -54,7 +55,8 @@ async def temp_ban_user(client, message):
         return
 
     try:
-        await message.chat.kick_member(
+        await client.ban_chat_member(
+            chat_id=message.chat.id,
             user_id=user_id,
             until_date=until_date_val
         )
