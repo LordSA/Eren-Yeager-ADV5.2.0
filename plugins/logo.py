@@ -87,7 +87,7 @@ async def font_selection_handler(client: Client, callback_query: CallbackQuery):
     color_buttons = [buttons[i:i + 3] for i in range(0, len(buttons), 3)]
     
     await callback_query.message.edit_text(
-        "**Select a stroke color:**",
+        "**Select a Font color:**",
         reply_markup=InlineKeyboardMarkup(color_buttons)
     )
 
@@ -142,7 +142,7 @@ async def color_selection_handler(client: Client, callback_query: CallbackQuery)
         if os.path.exists(OUTPUT_PATH):
             os.remove(OUTPUT_PATH)
 
-async def generate_logo(text: str, font_path: str, stroke_color) -> str:
+async def generate_logo(text: str, font_path: str, fill_color) -> str:
     """Generates the logo and returns the path to the file."""
     
     img = Image.new('RGB', (1920, 1080), color='black')
@@ -158,8 +158,8 @@ async def generate_logo(text: str, font_path: str, stroke_color) -> str:
     x = (image_width - w) / 2
     y = (image_height - h) / 2
     
-    draw.text((x, y), text, font=font, fill=(255, 255, 255))
-    draw.text((x, y + 6), text, font=font, fill="black", stroke_width=25, stroke_fill=stroke_color)
+    draw.text((x, y), text, font=font, fill=fill_color)
+
     
     img.save(OUTPUT_PATH, "PNG")
     return OUTPUT_PATH
