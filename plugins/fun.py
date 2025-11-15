@@ -42,7 +42,7 @@ async def throw_dart(client, message):
         chat_id=message.chat.id,
         emoji=DART_E_MOJI,
         disable_notification=True,
-        reply_to_id=rep_mesg_id
+        reply_to_message_id=rep_mesg_id
     )
 
 DICE_E_MOJI = "🎲"
@@ -58,7 +58,7 @@ async def roll_dice(client, message):
         chat_id=message.chat.id,
         emoji=DICE_E_MOJI,
         disable_notification=True,
-        reply_to_id=rep_mesg_id
+        reply_to_message_id=rep_mesg_id
     )
 
 TRY_YOUR_LUCK = "🎰"
@@ -74,7 +74,7 @@ async def luck_cownd(client, message):
         chat_id=message.chat.id,
         emoji=TRY_YOUR_LUCK,
         disable_notification=True,
-        reply_to_id=rep_mesg_id
+        reply_to_message_id=rep_mesg_id
     )
 
 GOAL_E_MOJI = "⚽"
@@ -90,5 +90,5 @@ async def shoot_goal(client, message):
         chat_id=message.chat.id,
         emoji=GOAL_E_MOJI,
         disable_notification=True,
-        reply_to_id=rep_mesg_id
+        reply_to_message_id=rep_mesg_id
     )
