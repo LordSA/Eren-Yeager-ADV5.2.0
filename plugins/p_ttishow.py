@@ -28,6 +28,8 @@ def parse_command_args(message, default_reason="No reason Provided"):
     reason = parts[2] if len(parts) > 2 else default_reason
     return target, reason
 
+
+
 # ----------------------------------- Handlers ----------------------------------- #
 
 @Client.on_message(filters.new_chat_members & filters.group)
@@ -250,7 +252,8 @@ async def list_chats(bot, message):
     chats = await db.get_all_chats()
     text = "Chats Saved In DB:\n\n"
     for chat in chats:
-        text += f"**Title:** `{chat['title']}`\n**ID:** `{chat['id']}`"
+        chat_name = chat.get('title') or chat.get('first_name') or "Unknown"
+        text += f"**Title:** `{chat_name}`\n**ID:** `{chat['id']}`\n"
         if chat.get("chat_status", {}).get("is_disabled"):
             text += " (Disabled)"
         text += "\n"
