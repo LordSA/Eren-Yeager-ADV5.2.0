@@ -1,11 +1,12 @@
 from pyrogram import Client, filters, enums
 from pyrogram.types import Message
 from typing import Tuple, Optional
+from plugins.Tools.help_func.cust_p_filters import admin_filter
 
-def extract_user(client: Client, message: Message) -> Tuple[Optional[int], Optional[str]]:
+async def extract_user(client: Client, message: Message) -> Tuple[Optional[int], Optional[str]]:
     user_id = None
     user_first_name = None
-
+    
     if message.reply_to_message:
         user_id = message.reply_to_message.from_user.id
         user_first_name = message.reply_to_message.from_user.first_name
@@ -15,18 +16,24 @@ def extract_user(client: Client, message: Message) -> Tuple[Optional[int], Optio
         
         if text.startswith("@"):
             try:
-                user_id = text
-                user_first_name = text
+                user = await client.get_users(text)
+                user_id = user.id
+                user_first_name = user.first_name
             except Exception:
-                pass
+                await message.reply_text("User not found.")
+                return None, None
         
         elif text.isdigit():
-            user_id = int(text)
-            user_first_name = text 
+            try:
+                user_id = int(text)
+                user_first_name = text 
+            except ValueError:
+                await message.reply_text("That's not a valid User ID.")
+                return None, None
             
     return user_id, user_first_name
 
-@Client.on_message(filters.command("gunban") & filters.admin)
+@Client.on_message(filters.command("gunban") & admin_filter)
 async def unban_user(client: Client, message: Message):
     
     user_id, user_first_name = await extract_user(client, message)
@@ -48,7 +55,7 @@ async def unban_user(client: Client, message: Message):
             f"They can now rejoin the group."
         )
 
-@Client.on_message(filters.command("unmute") & filters.admin)
+@Client.on_message(filters.command("unmute") & admin_filter)
 async def unmute_user(client: Client, message: Message):
     
     user_id, user_first_name = await extract_user(client, message)
