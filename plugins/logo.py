@@ -7,7 +7,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 FONTS = {
-    "Default": "plugins/resource/Chopsic.otf",
+    "Chopsic": "plugins/resource/Chopsic.otf",
     "Agile": "plugins/resource/agile.otf",
     "Brittany Signature": "plugins/resource/BrittanySignature.ttf",
     "Historic": "plugins/resource/Historic.otf",
@@ -102,12 +102,14 @@ async def color_selection_handler(client: Client, callback_query: CallbackQuery)
     
     try:
         original_message = callback_query.message.reply_to_message
-        if len(original_message.command) > 1:
-            text = original_message.text.split(None, 1)[1]
-        elif original_message.reply_to_message:
+        text_parts = original_message.text.split(None, 1)
+        if len(text_parts) > 1:
+            text = text_parts[1]
+        elif original_message.reply_to_message and original_message.reply_to_message.text:
             text = original_message.reply_to_message.text
         else:
             raise AttributeError("Could not find text")
+            
     except Exception as e:
         logger.error(f"Could not find original text: {e}")
         await callback_query.message.edit_text("Error: Could not find the original text.")
