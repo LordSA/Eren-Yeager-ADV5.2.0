@@ -79,64 +79,30 @@ async def update_bot(client: Client, message: Message):
             "⚠️ **Error:** `PM2_BOT_NAME` is not set in your env. Cannot restart."
         )
 
-    # [FIX] Changed 'testing' back to 'main'
-    await status_message.edit_text("🌍 **Fetching updates from Git...**\n\n`git fetch --all && git reset --hard origin/main`")
-
-    update_cmd = "git fetch --all && git reset --hard origin/main"
-    
     try:
+        # 1. Fetch and reset from git
+        await status_message.edit_text("🌍 Fetching updates from `origin/main`...")
+        update_cmd = "git fetch --all && git reset --hard origin/main"
         stdout, stderr = await run_shell_command(update_cmd)
-    except Exception as e:
-        await status_message.edit_text(f"❌ **Update failed!**\n\n**Error:**\n`{e}`")
-        return
+        git_output = (stdout or "") + "\n" + (stderr or "")
 
-    git_output = (stdout or "") + "\n" + (stderr or "")
+        if "Already up to date." in git_output and "Fast-forward" not in git_output:
+            return await status_message.edit_text("✅ Bot is already up-to-date. No restart needed.")
+            
+        if "error" in git_output.lower() or "fatal" in git_output.lower():
+            if "already up to date" not in git_output.lower():
+                return await status_message.edit_text(f"❌ **Git pull failed!**\n\n`{git_output}`")
 
-    if "Already up to date." in git_output and "Fast-forward" not in git_output:
-        await status_message.edit_text("✅ Bot is already up-to-date. No changes found.")
-        return
+        # 2. Install requirements
+        await status_message.edit_text(f"✅ **Git pull successful.**\n\n📦 Installing requirements...")
+        
+        pip_command = f"{sys.executable} -m pip install -r requirements.txt"
+        await run_shell_command(pip_command)
 
-    if "error" in git_output.lower() or "fatal" in git_output.lower():
-        if "already up to date" not in git_output.lower():
-            await status_message.edit_text(f"❌ **Git pull failed!**\n\n**Full Log:**\n<code>{git_output}</code>")
-            return
-
-    await status_message.edit_text(
-        f"✅ **Git pull successful.**\n\n**Full Log:**\n<code>{git_output}</code>\n\n"
-        "📦 **Installing requirements...**\n\n`pip install -r requirements.txt`"
-    )
-
-    pip_command = f"{sys.executable} -m pip install -r requirements.txt"
-    stdout_pip, stderr_pip = await run_shell_command(pip_command)
-    pip_output = (stdout_pip or "") + "\n" + (stderr_pip or "")
-
-    await status_message.edit_text(
-        f"✅ **Requirements installed.**\n\n**Full Log:**\n<code>{pip_output}</code>\n\n"
-        f"🔄 **Restarting bot via PM2...**\n\n`pm2 restart {PM2_BOT_NAME}`"
-    )
-
-    if LOG_CHANNEL:
-        try:
-            await client.send_message(
-                chat_id=LOG_CHANNEL,
-                text=f"📦 **Update: Git Pull Logs**\n<code>{git_output}</code>"
-            )
-            await client.send_message(
-                chat_id=LOG_CHANNEL,
-                text=f"📦 **Update: Pip Install Logs**\n<code>{pip_output}</code>"
-            )
-        except Exception as e:
-            print(f"Error sending to LOG_CHANNEL: {e}")
-            await status_message.edit_text(f"✅ Update complete. Restarting...\n\n⚠️ **Note:** Could not send logs to LOG_CHANNEL. Error: {e}")
-
-    await asyncio.sleep(2)
-
-    try:
+        await status_message.edit_text(f"✅ **Requirements installed.**\n\n🔄 Restarting bot via PM2...")
+        await asyncio.sleep(1) 
+        
         await run_shell_command(f"pm2 restart {PM2_BOT_NAME}")
-    except Exception as e:
-        await status_message.edit_text(
-            f"❌ **Restart failed!**\n\n**Error:**\n`{e}`\n\n"
-            "You may need to restart manually."
-        )
 
-app.run()
+    except Exception as e:
+        await status_message.edit_text(f"❌ **Update script failed!**\n\n**Error:**\n`{e}`\n\nYou may need to restart manually.")
