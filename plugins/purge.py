@@ -7,6 +7,7 @@ from plugins.Tools.help_func.cust_p_filters import f_owner_filter
 
 @Client.on_message(filters.command("purge") & f_owner_filter)
 async def purge(client, message):
+    logger.info(f"Purge command triggered by user: {message.from_user.id}")
     if message.chat.type not in (enums.ChatType.SUPERGROUP, enums.ChatType.CHANNEL):
         await message.reply_text("This command only works in supergroups and channels.")
         return
