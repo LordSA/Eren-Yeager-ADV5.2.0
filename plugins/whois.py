@@ -7,9 +7,9 @@ from pyrogram.errors import UserNotParticipant
 from pyrogram.types import Message
 from plugins.Tools.help_func.extract_user import extract_user
 from plugins.Tools.help_func.last_online import last_online
-from plugins.Tools.help_func.cust_p_filters import f_owner_filter
+from plugins.Tools.help_func.cust_p_filters import owner_filter
 
-@Client.on_message(filters.command('whois') & f_owner_filter)
+@Client.on_message(filters.command('whois') & owner_filter)
 async def who_is(client, message: Message):
     """Extracts user information."""
     status_message = await message.reply_text(
