@@ -6,7 +6,7 @@ from pyrogram.errors import ChatAdminRequired, FloodWait
 from plugins.admin_tools import logger
 from plugins.Tools.help_func.cust_p_filters import admin_filter
 
-@Client.on_message(filters.command("purge"))
+@Client.on_message(filters.command("purge") & filters.group & filters.admin)
 async def purge(client, message):
     logger.info(f"Purge command triggered by user: {message.from_user.id}")
     if message.chat.type not in (enums.ChatType.SUPERGROUP, enums.ChatType.CHANNEL):
