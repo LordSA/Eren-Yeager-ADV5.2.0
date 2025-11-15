@@ -7,6 +7,7 @@ from utils import get_size, temp, get_settings
 from info import ADMINS, LOG_CHANNEL, SUPPORT_CHAT
 from Script import script
 import os
+import io
 
 # ----------------------------------- Helper functions ----------------------------------- #
 
@@ -27,6 +28,23 @@ def parse_command_args(message, default_reason="No reason Provided"):
     target = parts[1]
     reason = parts[2] if len(parts) > 2 else default_reason
     return target, reason
+
+async def send_large_text(client, message, text, filename="chats.txt"):
+    try:
+        if len(text) > 4096:
+            with io.BytesIO(text.encode()) as file:
+                file.name = filename
+                await client.send_document(
+                    chat_id=message.chat.id,
+                    document=file,
+                    reply_to_message_id=message.id
+                )
+            await message.delete()
+        else:
+            await message.edit_text(text)
+    except Exception as e:
+        print(f"Error in send_large_text: {e}")
+        await message.edit_text("An error occurred while sending the chat list.")
 
 # ----------------------------------- Handlers ----------------------------------- #
 
@@ -245,13 +263,17 @@ async def list_users(bot, message):
     await send_large_text(bot, msg, text, "users.txt")
 
 @Client.on_message(filters.command("chats") & filters.user(ADMINS))
-async def list_chats(bot, message):
+async def list_chats(client, message):
     msg = await message.reply("Getting list of chats...")
     chats = await db.get_all_chats()
     text = "Chats Saved In DB:\n\n"
+    
     for chat in chats:
-        text += f"**Title:** `{chat['title']}`\n**ID:** `{chat['id']}`"
+        chat_name = chat.get('title') or chat.get('first_name') or "Unknown"
+        text += f"**Title:** `{chat_name}`\n**ID:** `{chat['id']}`"
+        
         if chat.get("chat_status", {}).get("is_disabled"):
             text += " (Disabled)"
-        text += "\n"
-    await send_large_text(bot, msg, text, "chats.txt")
+        
+        text += "\n\n"
+    await send_large_text(client, msg, text, "chats.txt")
