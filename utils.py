@@ -9,7 +9,7 @@ import requests
 
 from cachetools import TTLCache
 from pyrogram.errors import InputUserDeactivated, UserNotParticipant, FloodWait, UserIsBlocked, PeerIdInvalid
-from info import AUTH_CHANNEL, LONG_IMDB_DESCRIPTION, MAX_LIST_ELM, TMD_API_KEY, TMD_API_BASE, IMG_BASE_URL
+from info import AUTH_CHANNEL, LONG_IMDB_DESCRIPTION, MAX_LIST_ELM, TMD_API_KEY, TMD_API_BASE, IMG_BASE_URL, IMDB_TEMPLATE
 from imdb import IMDb
 from pyrogram.types import Message, InlineKeyboardButton, Audio, Document, Photo, Sticker, Video, VideoNote, Voice, Animation
 from pyrogram import enums
@@ -42,7 +42,7 @@ DEFAULT_SETTINGS = {
     'imdb': True,  # Set your desired default here
     'spell_check': True,
     'welcome': True,
-    'template': "Here is what i found for your query {query}" # A default template
+    'template': IMDB_TEMPLATE # A default template
 }
 
 # temp db for banned 
