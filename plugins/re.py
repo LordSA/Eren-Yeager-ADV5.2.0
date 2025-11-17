@@ -1,4 +1,4 @@
-import logging
+'''import logging
 from pyrogram import filters, Client, enums
 from pyrogram.types import Message
 from pyrogram.errors import UserNotParticipant
@@ -57,3 +57,4 @@ async def report_user(client: Client, message: Message):
         
     except Exception as e:
         logger.error(f"Failed to send report mention in group: {e}")
+        '''
