@@ -1,6 +1,5 @@
 import asyncio
 from datetime import datetime, timedelta
-#from info import ADMINS
 from pyrogram import Client, filters, enums
 from pyrogram.errors import ChatAdminRequired, FloodWait
 from plugins.group_tools import logger

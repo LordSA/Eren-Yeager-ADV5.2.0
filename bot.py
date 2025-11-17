@@ -1,4 +1,5 @@
 import sys
+import aiohttp
 import logging
 import logging.config
 import subprocess
@@ -17,6 +18,7 @@ from database.ia_filterdb import Media
 from database.filters_mdb import filters_db
 from database.users_chats_db import db
 from utils import temp, run_shell_command
+import utils
 
 class Bot(Client):
 
@@ -36,6 +38,7 @@ class Bot(Client):
         temp.BANNED_USERS = b_users
         temp.BANNED_CHATS = b_chats
         await super().start()
+        utils.AIO_SESSION = aiohttp.ClientSession()
         await Media.ensure_indexes()
         await filters_db.create_index()
         me = await self.get_me()
@@ -47,6 +50,9 @@ class Bot(Client):
         logging.info(LOG_STR)
 
     async def stop(self, *args):
+        if utils.AIO_SESSION:
+            await utils.AIO_SESSION.close()
+            
         await super().stop()
         logging.info("Bot stopped. Bye.")
     

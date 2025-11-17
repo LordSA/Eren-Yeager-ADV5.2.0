@@ -592,7 +592,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
     elif query.data == "nxt1":
         buttons = [[
             InlineKeyboardButton('『𝙼𝚄𝚃𝙴』',callback_data='mute'),
-            InlineKeyboardButton('『𝚁𝙴𝙿𝙾𝚁𝚃』',callback_data='report'),
+            InlineKeyboardButton('『𝚁𝙴𝙿𝙾𝚁𝚃』',callback_data='rpt'),
             InlineKeyboardButton('『𝙺𝙸𝙲𝙺』', callback_data='kick')                                                       
         ], [
             InlineKeyboardButton('『𝙵𝚄𝙽』', callback_data='fun'),
@@ -863,7 +863,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
             reply_markup=reply_markup,
             parse_mode=enums.ParseMode.HTML
         )
-    elif query.data == "report":
+    elif query.data == "rpt":
         buttons = [[
             InlineKeyboardButton('👩‍🦯 𝕭𝙰𝙲𝙺', callback_data='nxt1')
         ]]
@@ -1209,8 +1209,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
         except Exception as e:
             logger.error(f"Error rebuilding settings menu: {e}")
             await query.answer("Setting saved, but couldn't update menu.")
-
-# A more robust auto_filter with debugging and error handling
+            
 async def auto_filter(client, msg, spoll=False):
     # --- 1. GETTING SETTINGS AND FILES ---
     if not spoll:
@@ -1219,7 +1218,7 @@ async def auto_filter(client, msg, spoll=False):
             settings = await get_settings(msg.chat.id)
         except Exception as e:
             logger.error(f"Failed to get settings: {e}")
-            return  # Can't continue without settings
+            return 
 
         if message.text.startswith("/"): return 
         if re.findall("((^\/|^,|^!|^\.|^[\U0001F600-\U000E007F]).*)", message.text):
@@ -1234,7 +1233,7 @@ async def auto_filter(client, msg, spoll=False):
                 return
                 
             if not files:
-                if settings.get("spell_check"): # Use .get() for safety
+                if settings.get("spell_check"):
                     return await advantage_spell_chok(msg)
                 else:
                     return
@@ -1254,7 +1253,7 @@ async def auto_filter(client, msg, spoll=False):
     # --- 2. BUILDING BUTTONS ---
     try:
         print("[DEBUG] auto_filter: Building buttons...")
-        pre = 'filep' if settings['file_secure'] else 'file'
+        pre = 'filep' if settings.get('file_secure', False) else 'file'
         btn = []
         for file in files:
             key = str(uuid.uuid4())[:8]
@@ -1264,7 +1263,7 @@ async def auto_filter(client, msg, spoll=False):
                 [
                     InlineKeyboardButton(
                         text=f"© 『{get_size(file.file_size)}』 {file.file_name}", 
-                        callback_data=f'{pre}#{key}' # Use the short key
+                        callback_data=f'{pre}#{key}' 
                     ),
                 ]
             )
@@ -1273,11 +1272,11 @@ async def auto_filter(client, msg, spoll=False):
                 [
                     InlineKeyboardButton(
                         text=f"© {file.file_name}",
-                        callback_data=f'{pre}#{key}', # Use the short key
+                        callback_data=f'{pre}#{key}', 
                     ),
                     InlineKeyboardButton(
                         text=f"『{get_size(file.file_size)}』",
-                        callback_data=f'{pre}#{key}', # Use the short key
+                        callback_data=f'{pre}#{key}', 
                     ),
                 ]
             )
@@ -1302,57 +1301,64 @@ async def auto_filter(client, msg, spoll=False):
     except Exception as e:
         logger.exception(f"CRITICAL ERROR in auto_filter: Failed during BUTTON building: {e}")
         print(f"[DEBUG] auto_filter: FAILED at button building: {e}")
-        return # Can't continue if buttons fail
+        return
     sent_message = None
     # --- 3. GETTING IMDB DATA AND FORMATTING CAPTION ---
     try:
         print("[DEBUG] auto_filter: Getting IMDB data...")
-        # Use .get() for safe access to settings
         imdb = await get_poster(search, file=(files[0]).file_name) if settings.get("imdb") else None 
         print(f"[DEBUG] IMDB Result was: {imdb}")
         TEMPLATE = settings.get('template') 
         
         if not TEMPLATE:
             print("[DEBUG] auto_filter: No template found in settings! Using default.")
-            TEMPLATE = "Here is what i found for your query {query}" # Default fallback
-
+            TEMPLATE = "Here is what i found for your query {query}"
+        
+        template_vars = {
+            'query': search,
+            'title': 'N/A', 'votes': 'N/A', 'aka': 'N/A', 'seasons': 'N/A',
+            'box_office': 'N/A', 'localized_title': 'N/A', 'kind': 'N/A',
+            'imdb_id': 'N/A', 'cast': 'N/A', 'runtime': 'N/A', 'countries': 'N/A',
+            'certificates': 'N/A', 'languages': 'N/A', 'director': 'N/A',
+            'writer': 'N/A', 'producer': 'N/A', 'composer': 'N/A',
+            'cinematographer': 'N/A', 'music_team': 'N/A', 'distributors': 'N/A',
+            'release_date': 'N/A', 'year': 'N/A', 'genres': 'N/A',
+            'poster': None, 'plot': 'N/A', 'rating': 'N/A', 'url': 'N/A'
+        }
         if imdb:
             print("[DEBUG] auto_filter: IMDB data found. Formatting template.")
-            # Use .get() for ALL keys to prevent crashing if a key is missing
-            cap = TEMPLATE.format(
-                query=search,
-                title=imdb.get('title', 'N/A'),
-                votes=imdb.get('votes', 'N/A'),
-                aka=imdb.get("aka", 'N/A'),
-                seasons=imdb.get("seasons", 'N/A'),
-                box_office=imdb.get('box_office', 'N/A'),
-                localized_title=imdb.get('localized_title', 'N/A'),
-                kind=imdb.get('kind', 'N/A'),
-                imdb_id=imdb.get("imdb_id", 'N/A'),
-                cast=imdb.get("cast", 'N/A'),
-                runtime=imdb.get("runtime", 'N/A'),
-                countries=imdb.get("countries", 'N/A'),
-                certificates=imdb.get("certificates", 'N/A'),
-                languages=imdb.get("languages", 'N/A'),
-                director=imdb.get("director", 'N/A'),
-                writer=imdb.get("writer", 'N/A'),
-                producer=imdb.get("producer", 'N/A'),
-                composer=imdb.get("composer", 'N/A'),
-                cinematographer=imdb.get("cinematographer", 'N/A'),
-                music_team=imdb.get("music_team", 'N/A'),
-                distributors=imdb.get("distributors", 'N/A'),
-                release_date=imdb.get('release_date', 'N/A'),
-                year=imdb.get('year', 'N/A'),
-                genres=imdb.get('genres', 'N/A'),
-                poster=imdb.get('poster'), # .get('poster') is fine, it will be None if missing
-                plot=imdb.get('plot', 'N/A'),
-                rating=imdb.get('rating', 'N/A'),
-                url=imdb.get('url', 'N/A'),
-                **locals()
-            )
+            template_vars.update({
+                'title': imdb.get('title', 'N/A'),
+                'votes': imdb.get('votes', 'N/A'),
+                'aka': imdb.get("aka", 'N/A'),
+                'seasons': imdb.get("seasons", 'N/A'),
+                'box_office': imdb.get('box_office', 'N/A'),
+                'localized_title': imdb.get('localized_title', 'N/A'),
+                'kind': imdb.get('kind', 'N/A'),
+                'imdb_id': imdb.get("imdb_id", 'N/A'),
+                'cast': imdb.get("cast", 'N/A'),
+                'runtime': imdb.get("runtime", 'N/A'),
+                'countries': imdb.get("countries", 'N/A'),
+                'certificates': imdb.get("certificates", 'N/A'),
+                'languages': imdb.get("languages", 'N/A'),
+                'director': imdb.get("director", 'N/A'),
+                'writer': imdb.get("writer", 'N/A'),
+                'producer': imdb.get("producer", 'N/A'),
+                'composer': imdb.get("composer", 'N/A'),
+                'cinematographer': imdb.get("cinematographer", 'N/A'),
+                'music_team': imdb.get("music_team", 'N/A'),
+                'distributors': imdb.get("distributors", 'N/A'),
+                'release_date': imdb.get('release_date', 'N/A'),
+                'year': imdb.get('year', 'N/A'),
+                'genres': imdb.get('genres', 'N/A'),
+                'poster': imdb.get('poster'),
+                'plot': imdb.get('plot', 'N/A'),
+                'rating': imdb.get('rating', 'N/A'),
+                'url': imdb.get('url', 'N/A'),
+            })
+            cap = TEMPLATE.format(**template_vars)
         else:
             print("[DEBUG] auto_filter: No IMDB data. Using simple caption.")
-            # This is a safe fallback in case the template ONLY has {query}
             try:
                 cap = TEMPLATE.format(query=search, **locals())
             except KeyError:
@@ -1363,27 +1369,26 @@ async def auto_filter(client, msg, spoll=False):
     except Exception as e:
         logger.exception(f"CRITICAL ERROR in auto_filter: Failed during IMDB/Caption formatting: {e}")
         print(f"[DEBUG] auto_filter: FAILED at IMDB/Caption: {e}")
-        # FALLBACK: Send a simple message if IMDB/Template fails
         try:
             sent_message = await message.reply_text(
                 f"Here is what I found for your query `{search}`.\n\n_(An error occurred while fetching full details.)_",
-                reply_markup=InlineKeyboardMarkup(btn) # btn was built in the first try block
+                reply_markup=InlineKeyboardMarkup(btn)
             )
         except Exception as fallback_e:
             logger.error(f"Failed to send fallback message: {fallback_e}")
-        return # Stop execution
+        return
 
     # --- 4. SENDING THE REPLY ---
     try:
         print("[DEBUG] auto_filter: Attempting to send reply...")
-        if imdb and imdb.get('poster'):
+        if template_vars.get('poster'):
             print("[DEBUG] auto_filter: Sending with photo...")
             try:
-                sent_message = await message.reply_photo(photo=imdb.get('poster'), caption=cap[:1000],
+                sent_message = await message.reply_photo(photo=template_vars.get('poster'), caption=cap[:1000],
                                           reply_markup=InlineKeyboardMarkup(btn))
             except (MediaEmpty, PhotoInvalidDimensions, WebpageMediaEmpty):
                 print("[DEBUG] auto_filter: Photo failed, trying smaller poster.")
-                pic = imdb.get('poster')
+                pic = template_vars.get('poster')
                 poster = pic.replace('.jpg', "._V1_UX360.jpg") # Fixed your typo here
                 sent_message = await message.reply_photo(photo=poster, caption=cap[:1000], reply_markup=InlineKeyboardMarkup(btn))
             except Exception as e:

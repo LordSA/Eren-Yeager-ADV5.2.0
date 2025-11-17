@@ -1,21 +1,17 @@
 import re
 import os
 import uuid
-import asyncio
-import aiohttp 
+import asyncio 
 import logging
 import requests
 
 
 from cachetools import TTLCache
 from pyrogram.errors import InputUserDeactivated, UserNotParticipant, FloodWait, UserIsBlocked, PeerIdInvalid
-from info import AUTH_CHANNEL, LONG_IMDB_DESCRIPTION, MAX_LIST_ELM
-from imdb import IMDb
-from pyrogram.types import Message, InlineKeyboardButton
+from info import AUTH_CHANNEL, LONG_IMDB_DESCRIPTION, MAX_LIST_ELM, TMD_API_KEY, TMD_API_BASE, IMG_BASE_URL, DEFAULT_SETTINGS
+from pyrogram.types import Message, InlineKeyboardButton, Audio, Document, Photo, Sticker, Video, VideoNote, Voice, Animation
 from pyrogram import enums
-from typing import Union
-from datetime import datetime
-from typing import List
+from typing import List, Union, Optional, Dict, Any
 from database.users_chats_db import db
 from bs4 import BeautifulSoup
 
@@ -29,22 +25,13 @@ BTN_URL_REGEX = re.compile(
     r"(\[([^\[]+?)\]\((buttonurl|buttonalert):(?:/{0,2})(.+?)(:same)?\))"
 )
 
-imdb = IMDb()
-
+#imdb = IMDb()
+AIO_SESSION = None
 BANNED = {}
 SMART_OPEN = '“'
 SMART_CLOSE = '”'
 START_CHAR = ('\'', '"', SMART_OPEN)
 
-DEFAULT_SETTINGS = {
-    'button': True,
-    'botpm': True,
-    'file_secure': False,
-    'imdb': True,  # Set your desired default here
-    'spell_check': True,
-    'welcome': True,
-    'template': "Here is what i found for your query {query}" # A default template
-}
 
 # temp db for banned 
 class temp(object):
@@ -71,90 +58,110 @@ async def is_subscribed(bot, query):
 
     return False
 
-async def get_poster(query, bulk=False, id=False, file=None):
-    if not id:
-        query = (query.strip()).lower()
-        title = query
-        year = re.findall(r'[1-2]\d{3}$', query, re.IGNORECASE)
-        if year:
-            year = list_to_str(year[:1])
-            title = (query.replace(year, "")).strip()
-        elif file is not None:
-            year = re.findall(r'[1-2]\d{3}', file, re.IGNORECASE)
-            if year:
-                year = list_to_str(year[:1]) 
+def list_to_str(k):
+    if not k:
+        return "N/A"
+    elif len(k) == 1:
+        return str(k[0])
+    if MAX_LIST_ELM:
+        k = k[:int(MAX_LIST_ELM)]
+    return ', '.join(map(str, k))
+
+def get_crew(crew_list: List[Dict[str, Any]], job: str) -> List[Dict[str, Any]]:
+    """Helper to find crew members by their job title."""
+    return [member for member in crew_list if member.get("job") == job]
+
+async def get_poster(query: str, bulk: bool = False, id: bool = False, file: Optional[str] = None) -> Optional[List[Dict[str, Any]]]:
+    if TMD_API_KEY == "BLAH BLAH":
+        logger.error("TMDb API key is not set! 'get_poster' will not work.")
+        return None
+
+    try:
+        if id:
+            return await get_movie_details(query)
         else:
-            year = None
-        
-        # --- FIX 2: Run the BLOCKING call in a separate thread ---
-        movieid = await asyncio.to_thread(
-            imdb.search_movie, title.lower(), results=10
-        )
-        
-        if not movieid:
-            return None
-        if year:
-            filtered=list(filter(lambda k: str(k.get('year')) == str(year), movieid))
-            if not filtered:
-                filtered = movieid
-        else:
-            filtered = movieid
-        movieid=list(filter(lambda k: k.get('kind') in ['movie', 'tv series'], filtered))
-        if not movieid:
-            movieid = filtered
-        if bulk:
-            return movieid
-        movieid = movieid[0].movieID
-    else:
-        movieid = query
+            return await search_movie(query, bulk)
+    except Exception as e:
+        logger.error(f"Error in get_poster (TMDb): {e}")
+        return None
+
+async def search_movie(query: str, bulk: bool = False) -> Optional[List[Dict[str, Any]]]:
+    params = {'api_key': TMD_API_KEY, 'query': query}
     
-    # --- FIX 2: Run the BLOCKING call in a separate thread ---
-    movie = await asyncio.to_thread(imdb.get_movie, movieid)
+    async with AIO_SESSION.get(f"{TMD_API_BASE}/search/movie", params=params) as response:
+        if response.status != 200:
+            logger.error(f"TMDb search API failed: {response.status}")
+            return None
+            
+        data = await response.json()
+        results = data.get("results")
 
-    if movie.get("original air date"):
-        date = movie["original air date"]
-    elif movie.get("year"):
-        date = movie.get("year")
-    else:
-        date = "N/A"
-    plot = ""
-    if not LONG_IMDB_DESCRIPTION:
-        plot = movie.get('plot')
-        if plot and len(plot) > 0:
-            plot = plot[0]
-    else:
-        plot = movie.get('plot outline')
-    if plot and len(plot) > 800:
-        plot = plot[0:800] + "..."
+        if not results:
+            return None
+        formatted_results = [
+            {
+                "movieID": movie.get("id"),
+                "title": movie.get("title"),
+                "year": movie.get("release_date", "N/A").split("-")[0]
+            }
+            for movie in results
+        ]
 
+        if bulk:
+            return formatted_results
+        else:
+            first_movie_id = formatted_results[0].get("movieID")
+            return await get_movie_details(first_movie_id)
+
+async def get_movie_details(movie_id: str) -> Optional[Dict[str, Any]]:
+    params = {'api_key': TMD_API_KEY, 'append_to_response': 'credits'}
+    
+    async with AIO_SESSION.get(f"{TMD_API_BASE}/movie/{movie_id}", params=params) as response:
+        if response.status != 200:
+            logger.error(f"TMDb details API failed: {response.status}")
+            return None
+            
+        movie = await response.json()
+
+    plot = movie.get('overview', 'N/A')
+    if plot and LONG_IMDB_DESCRIPTION and len(plot) > 800:
+        plot = plot[:800] + "..."
+    elif not LONG_IMDB_DESCRIPTION and plot and len(plot) > 200:
+         plot = plot[:200] + "..."
+         
+    poster_path = movie.get('poster_path')
+    poster_url = f"{IMG_BASE_URL}{poster_path}" if poster_path else None
+    cast = movie.get("credits", {}).get("cast", [])
+    crew = movie.get("credits", {}).get("crew", [])
     return {
-        'title': movie.get('title'),
-        'votes': movie.get('votes'),
-        "aka": list_to_str(movie.get("akas")),
-        "seasons": movie.get("number of seasons"),
-        "box_office": movie.get('box office'),
-        'localized_title': movie.get('localized title'),
-        'kind': movie.get("kind"),
-        "imdb_id": f"tt{movie.get('imdbID')}",
-        "cast": list_to_str(movie.get("cast")),
-        "runtime": list_to_str(movie.get("runtimes")),
-        "countries": list_to_str(movie.get("countries")),
-        "certificates": list_to_str(movie.get("certificates")),
-        "languages": list_to_str(movie.get("languages")),
-        "director": list_to_str(movie.get("director")),
-        "writer":list_to_str(movie.get("writer")),
-        "producer":list_to_str(movie.get("producer")),
-        "composer":list_to_str(movie.get("composer")) ,
-        "cinematographer":list_to_str(movie.get("cinematographer")),
-        "music_team": list_to_str(movie.get("music department")),
-        "distributors": list_to_str(movie.get("distributors")),
-        'release_date': date,
-        'year': movie.get('year'),
-        'genres': list_to_str(movie.get("genres")),
-        'poster': movie.get('full-size cover url'),
+        'title': movie.get('title', 'N/A'),
+        'votes': movie.get('vote_count', 'N/A'),
+        "aka": movie.get("original_title", "N/A"),
+        "seasons": "N/A",
+        "box_office": f"${movie.get('revenue', 0):,}",
+        'localized_title': movie.get('original_title', 'N/A'),
+        'kind': "movie",
+        "imdb_id": movie.get('imdb_id', f"tmdb{movie.get('id')}"),
+        "cast": list_to_str([person.get('name') for person in cast]),
+        "runtime": f"{movie.get('runtime', 0)} min",
+        "countries": list_to_str([country.get('name') for country in movie.get("production_countries", [])]),
+        "certificates": "N/A",
+        "languages": list_to_str([lang.get('english_name') for lang in movie.get("spoken_languages", [])]),
+        "director": list_to_str([person.get('name') for person in get_crew(crew, "Director")]),
+        "writer": list_to_str([person.get('name') for person in get_crew(crew, "Writer")]),
+        "producer": list_to_str([person.get('name') for person in get_crew(crew, "Producer")]),
+        "composer": list_to_str([person.get('name') for person in get_crew(crew, "Original Music Composer")]) ,
+        "cinematographer": list_to_str([person.get('name') for person in get_crew(crew, "Director of Photography")]),
+        "music_team": list_to_str([person.get('name') for person in get_crew(crew, "Music")]),
+        "distributors": list_to_str([company.get('name') for company in movie.get("production_companies", [])]),
+
+        'release_date': movie.get('release_date', 'N/A'),
+        'year': movie.get('release_date', 'N/A').split("-")[0],
+        'genres': list_to_str([genre.get('name') for genre in movie.get("genres", [])]),
+        'poster': poster_url,
         'plot': plot,
-        'rating': str(movie.get("rating")),
-        'url':f'https://www.imdb.com/title/tt{movieid}'
+        'rating': f"{movie.get('vote_average', 0.0):.1f}",
+        'url': movie.get('homepage') or f"https://www.themoviedb.org/movie/{movie_id}"
     }
 
 async def broadcast_messages(user_id, message):
@@ -182,17 +189,13 @@ async def search_gagala(text):
     usr_agent = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
         'Chrome/61.0.3163.100 Safari/537.36'
-        }
+    }
     text = text.replace(" ", '+')
     url = f'https://www.google.com/search?q={text}'
-    
-    # --- FIX 1: Use aiohttp for non-blocking request ---
-    async with aiohttp.ClientSession(headers=usr_agent) as session:
-        async with session.get(url) as response:
-            response.raise_for_status()
-            html = await response.text()
-            
-    soup = BeautifulSoup(html, 'html.parser')
+    async with AIO_SESSION.get(url, headers=usr_agent) as response:
+        response.raise_for_status()
+        html = await response.text()
+    soup = await asyncio.to_thread(BeautifulSoup, html, 'html.parser')
     titles = soup.find_all( 'h3' )
     return [title.getText() for title in titles]
 
@@ -246,22 +249,30 @@ def split_list(l, n):
     for i in range(0, len(l), n):
         yield l[i:i + n]   
 
-def get_file_id(msg: Message):
-    if msg.media:
-        for message_type in (
-            "photo",
-            "animation",
-            "audio",
-            "document",
-            "video",
-            "video_note",
-            "voice",
-            "sticker"
-        ):
-            obj = getattr(msg, message_type)
-            if obj:
-                setattr(obj, "message_type", message_type)
-                return obj
+MediaType = Union[
+    "Audio", "Document", "Photo",
+    "Sticker", "Video", "VideoNote",
+    "Voice", "Animation"
+]
+
+def get_file_id(msg: Message) -> Optional[MediaType]:
+    if not msg.media:
+        return None 
+    media_with_files = {
+        enums.MessageMediaType.PHOTO,
+        enums.MessageMediaType.ANIMATION,
+        enums.MessageMediaType.AUDIO,
+        enums.MessageMediaType.DOCUMENT,
+        enums.MessageMediaType.VIDEO,
+        enums.MessageMediaType.VIDEO_NOTE,
+        enums.MessageMediaType.VOICE,
+        enums.MessageMediaType.STICKER
+    }
+
+    if msg.media in media_with_files:
+        return getattr(msg, msg.media.value)
+    
+    return None 
 
 def extract_user(message: Message) -> Union[int, str]:
     """extracts the user from a message"""
@@ -292,16 +303,6 @@ def extract_user(message: Message) -> Union[int, str]:
         user_first_name = message.from_user.first_name
     return (user_id, user_first_name)
 
-def list_to_str(k):
-    if not k:
-        return "N/A"
-    elif len(k) == 1:
-        return str(k[0])
-    elif MAX_LIST_ELM:
-        k = k[:int(MAX_LIST_ELM)]
-        return ' '.join(f'{elem}, ' for elem in k)
-    else:
-        return ' '.join(f'{elem}, ' for elem in k)
 
 def last_online(from_user):
     time = ""

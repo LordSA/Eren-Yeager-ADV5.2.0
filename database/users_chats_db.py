@@ -1,18 +1,6 @@
 import motor.motor_asyncio
-from info import (
-    DATABASE_NAME,
-    DATABASE_URI,
-    IMDB,
-    IMDB_TEMPLATE,
-    MELCOW_NEW_USERS,
-    P_TTI_SHOW_OFF,
-    SINGLE_BUTTON,
-    SPELL_CHECK_REPLY,
-    PROTECT_CONTENT,
-)
+from info import DATABASE_NAME, DATABASE_URI, DEFAULT_SETTINGS ##MELCOW_NEW_USERS, P_TTI_SHOW_OFF, SINGLE_BUTTON, SPELL_CHECK_REPLY, PROTECT_CONTENT
 from typing import List, Tuple, Dict, Optional
-
-
 class Database:
     def __init__(self, uri: str, database_name: str):
         self._client = motor.motor_asyncio.AsyncIOMotorClient(uri)
@@ -94,20 +82,27 @@ class Database:
         )
 
     async def update_settings(self, chat_id: int, settings: Dict):
-        await self.col_groups.update_one({"id": int(chat_id)}, {"$set": {"settings": settings}}, upsert=True)
-
+        from utils import temp
+        updates = {f"settings.{key}": value for key, value in settings.items()}
+        await self.col_groups.update_one(
+        {"id": int(chat_id)},
+        {"$set": updates},
+        upsert=True
+        )
+        if int(chat_id) in temp.SETTINGS:
+            try:
+                del temp.SETTINGS[int(chat_id)]
+            except Exception as e:
+                print(f"Error deleting settings cache: {e}")
+        
     async def get_settings(self, chat_id: int) -> Optional[Dict]:
-        '''default = {
-            "button": SINGLE_BUTTON,
-            "botpm": P_TTI_SHOW_OFF,
-            "file_secure": PROTECT_CONTENT,
-            "imdb": IMDB,
-            "spell_check": SPELL_CHECK_REPLY,
-            "welcome": MELCOW_NEW_USERS,
-            "template": IMDB_TEMPLATE,
-        }'''
+        settings = DEFAULT_SETTINGS.copy()
         chat = await self.col_groups.find_one({"id": int(chat_id)})
-        return chat.get("settings") if chat else None
+        if chat:
+            db_settings = chat.get("settings")
+            if db_settings:
+                settings.update(db_settings)
+        return settings
 
     # -------------------- Stats --------------------
     async def total_chat_count(self) -> int:

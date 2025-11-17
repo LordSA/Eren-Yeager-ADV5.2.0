@@ -1,4 +1,3 @@
-import os
 import traceback
 from io import BytesIO
 import aiohttp

@@ -1,8 +1,7 @@
 from pyrogram import Client, filters, enums
 from pyrogram.types import Message
-from typing import Tuple, Optional
 from plugins.Tools.help_func.cust_p_filters import admin_filter
-from plugins.Tools.help_func.extract_user import extract_user
+from utils import extract_user
 @Client.on_message(filters.command("gunban") & admin_filter)
 async def unban_user(client: Client, message: Message):
     
