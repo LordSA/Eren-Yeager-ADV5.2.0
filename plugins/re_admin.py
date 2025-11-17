@@ -1,6 +1,7 @@
 import logging
 from pyrogram import filters, Client, enums
 from pyrogram.types import Message
+from pyrogram.errors import UserNotParticipant
 
 logger = logging.getLogger(__name__)
 
@@ -12,34 +13,44 @@ async def report_user(client: Client, message: Message):
     chat_id = message.chat.id
     reporter = message.from_user.mention
     
-    admins = await client.get_chat_members(
-        chat_id=chat_id, 
-        filter=enums.ChatMembersFilter.ADMINISTRATORS
-    )
-    
-    success = False
-    
-    report = f"⚠️ **Report**\n\n"
-    report += f"**Reporter:** {reporter}\n"
-    report += f"**Message:** {message.reply_to_message.link}"
-    
+    try:
+        admins = await client.get_chat_members(
+            chat_id=chat_id, 
+            filter=enums.ChatMembersFilter.ADMINISTRATORS
+        )
+    except Exception as e:
+        logger.error(f"Failed to get admins for report: {e}")
+        return
+
+    mention_list = []
     for admin in admins:
-        if admin.user.is_bot:
+        if admin.user.is_bot or admin.user.is_deleted:
             continue
-            
+        
+        mention_list.append(admin.user.mention)
+
+    if not mention_list:
         try:
-            reported_post = await message.reply_to_message.forward(admin.user.id)
-            
-            await reported_post.reply_text(
-                text=report,
-                disable_web_page_preview=True
-            )
-            
-            success = True
-            
-        except Exception as e:
-            logger.warning(f"Failed to report to admin {admin.user.id}: {e}")
+            await message.reply_text("I couldn't find any admins to report this to.")
+        except UserNotParticipant:
             pass
-            
-    if success:
-        await message.reply_text("𝖱𝖾Ghmr-Re'd 𝗍𝗈 𝖠𝖽𝗆𝗂𝗇𝗌!")
+        return
+
+    mentions = " ".join(mention_list)
+    report_text = (
+        f"⚠️ **Report!**\n\n"
+        f"**From:** {reporter}\n"
+        f"**Admins, please review this message:** {mentions}"
+    )
+
+    try:
+        await client.send_message(
+            chat_id=chat_id,
+            text=report_text,
+            reply_to_message_id=message.reply_to_message.id
+        )
+        
+        await message.delete()
+        
+    except Exception as e:
+        logger.error(f"Failed to send report mention in group: {e}")
