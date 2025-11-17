@@ -1,9 +1,8 @@
 from pyrogram import Client, filters, enums
 from pyrogram.types import ChatPermissions, Message
 from datetime import datetime, timedelta
-
+from utils import extract_user
 from plugins.Tools.help_func.cust_p_filters import admin_filter
-from plugins.Tools.help_func.extract_user import extract_user
 from plugins.Tools.help_func.string_handling import extract_time
 
 @Client.on_message(filters.command("mute") & admin_filter)
