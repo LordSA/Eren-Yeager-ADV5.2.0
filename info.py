@@ -79,3 +79,13 @@ contact_filter = filters.create(
     lambda _, __, message:
     (message.from_user and message.from_user.is_contact) or message.outgoing
 )
+
+DEFAULT_SETTINGS = {
+    'button': True,
+    'botpm': True,
+    'file_secure': False,
+    'imdb': True,  # Set your desired default here
+    'spell_check': True,
+    'welcome': True,
+    'template': IMDB_TEMPLATE # A default template
+}

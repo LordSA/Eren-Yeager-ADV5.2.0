@@ -1,19 +1,16 @@
 import re
 import os
 import uuid
-import asyncio
-import aiohttp 
+import asyncio 
 import logging
 import requests
 
 
 from cachetools import TTLCache
 from pyrogram.errors import InputUserDeactivated, UserNotParticipant, FloodWait, UserIsBlocked, PeerIdInvalid
-from info import AUTH_CHANNEL, LONG_IMDB_DESCRIPTION, MAX_LIST_ELM, TMD_API_KEY, TMD_API_BASE, IMG_BASE_URL, IMDB_TEMPLATE
-from imdb import IMDb
+from info import AUTH_CHANNEL, LONG_IMDB_DESCRIPTION, MAX_LIST_ELM, TMD_API_KEY, TMD_API_BASE, IMG_BASE_URL, DEFAULT_SETTINGS
 from pyrogram.types import Message, InlineKeyboardButton, Audio, Document, Photo, Sticker, Video, VideoNote, Voice, Animation
 from pyrogram import enums
-from datetime import datetime
 from typing import List, Union, Optional, Dict, Any
 from database.users_chats_db import db
 from bs4 import BeautifulSoup
@@ -35,15 +32,6 @@ SMART_OPEN = '“'
 SMART_CLOSE = '”'
 START_CHAR = ('\'', '"', SMART_OPEN)
 
-DEFAULT_SETTINGS = {
-    'button': True,
-    'botpm': True,
-    'file_secure': False,
-    'imdb': True,  # Set your desired default here
-    'spell_check': True,
-    'welcome': True,
-    'template': IMDB_TEMPLATE # A default template
-}
 
 # temp db for banned 
 class temp(object):
@@ -175,98 +163,7 @@ async def get_movie_details(movie_id: str) -> Optional[Dict[str, Any]]:
         'rating': f"{movie.get('vote_average', 0.0):.1f}",
         'url': movie.get('homepage') or f"https://www.themoviedb.org/movie/{movie_id}"
     }
-'''
-async def get_poster(query, bulk=False, id=False, file=None):
-    if not id:
-        query = (query.strip()).lower()
-        title = query
-        year = re.findall(r'[1-2]\d{3}$', query, re.IGNORECASE)
-        if year:
-            year = list_to_str(year[:1])
-            title = (query.replace(year, "")).strip()
-        elif file is not None:
-            year = re.findall(r'[1-2]\d{3}', file, re.IGNORECASE)
-            if year:
-                year = list_to_str(year[:1]) 
-        else:
-            year = None
-        
-        # --- FIX 2: Run the BLOCKING call in a separate thread ---
-        movieid = await asyncio.to_thread(
-            imdb.search_movie, title.lower(), results=10
-        )
-        
-        if not movieid:
-            return None
-        if year:
-            filtered=list(filter(lambda k: str(k.get('year')) == str(year), movieid))
-            if not filtered:
-                filtered = movieid
-        else:
-            filtered = movieid
-        movieid=list(filter(lambda k: k.get('kind') in ['movie', 'tv series'], filtered))
-        if not movieid:
-            movieid = filtered
-        
-        
-        if not movieid:
-            return None
-            
-        if bulk:
-            return movieid
-        movieid = movieid[0].movieID
-    else:
-        movieid = query
-    
-    # --- FIX 2: Run the BLOCKING call in a separate thread ---
-    movie = await asyncio.to_thread(imdb.get_movie, movieid)
 
-    if movie.get("original air date"):
-        date = movie["original air date"]
-    elif movie.get("year"):
-        date = movie.get("year")
-    else:
-        date = "N/A"
-    plot = ""
-    if not LONG_IMDB_DESCRIPTION:
-        plot = movie.get('plot')
-        if plot and len(plot) > 0:
-            plot = plot[0]
-    else:
-        plot = movie.get('plot outline')
-    if plot and len(plot) > 800:
-        plot = plot[0:800] + "..."
-
-    return {
-        'title': movie.get('title'),
-        'votes': movie.get('votes'),
-        "aka": list_to_str(movie.get("akas")),
-        "seasons": movie.get("number of seasons"),
-        "box_office": movie.get('box office'),
-        'localized_title': movie.get('localized title'),
-        'kind': movie.get("kind"),
-        "imdb_id": f"tt{movie.get('imdbID')}",
-        "cast": list_to_str(movie.get("cast")),
-        "runtime": list_to_str(movie.get("runtimes")),
-        "countries": list_to_str(movie.get("countries")),
-        "certificates": list_to_str(movie.get("certificates")),
-        "languages": list_to_str(movie.get("languages")),
-        "director": list_to_str(movie.get("director")),
-        "writer":list_to_str(movie.get("writer")),
-        "producer":list_to_str(movie.get("producer")),
-        "composer":list_to_str(movie.get("composer")) ,
-        "cinematographer":list_to_str(movie.get("cinematographer")),
-        "music_team": list_to_str(movie.get("music department")),
-        "distributors": list_to_str(movie.get("distributors")),
-        'release_date': date,
-        'year': movie.get('year'),
-        'genres': list_to_str(movie.get("genres")),
-        'poster': movie.get('full-size cover url'),
-        'plot': plot,
-        'rating': str(movie.get("rating")),
-        'url':f'https://www.imdb.com/title/tt{movieid}'
-    }
-'''
 async def broadcast_messages(user_id, message):
     try:
         await message.copy(chat_id=user_id)
