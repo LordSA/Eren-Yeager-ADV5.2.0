@@ -7,7 +7,10 @@ logger = logging.getLogger(__name__)
 
 @Client.on_message((filters.command("report") | filters.regex("@admin")) & filters.group)
 async def report_user(client: Client, message: Message):
+    
+    # [FIX] This now warns the user if they don't reply
     if not message.reply_to_message:
+        await message.reply_text("Please reply to the message you want to report.")
         return 
 
     chat_id = message.chat.id
