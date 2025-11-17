@@ -97,7 +97,7 @@ class Database:
         await self.col_groups.update_one({"id": int(chat_id)}, {"$set": {"settings": settings}}, upsert=True)
 
     async def get_settings(self, chat_id: int) -> Optional[Dict]:
-        '''default = {
+        default = {
             "button": SINGLE_BUTTON,
             "botpm": P_TTI_SHOW_OFF,
             "file_secure": PROTECT_CONTENT,
@@ -105,9 +105,14 @@ class Database:
             "spell_check": SPELL_CHECK_REPLY,
             "welcome": MELCOW_NEW_USERS,
             "template": IMDB_TEMPLATE,
-        }'''
+        }
         chat = await self.col_groups.find_one({"id": int(chat_id)})
-        return chat.get("settings") if chat else None
+        if chat:
+            db_settings = chat.get("settings")
+            if db_settings:
+                default.update(db_settings)
+                return default
+        return default
 
     # -------------------- Stats --------------------
     async def total_chat_count(self) -> int:
