@@ -29,7 +29,7 @@ BTN_URL_REGEX = re.compile(
 )
 
 imdb = IMDb()
-AIO_SESSION = aiohttp.ClientSession() = None
+AIO_SESSION = None
 BANNED = {}
 SMART_OPEN = '“'
 SMART_CLOSE = '”'
