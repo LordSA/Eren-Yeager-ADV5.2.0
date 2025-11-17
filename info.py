@@ -61,6 +61,11 @@ PROTECT_CONTENT = is_enabled((environ.get('PROTECT_CONTENT', "False")), False)
 PUBLIC_FILE_STORE = is_enabled((environ.get('PUBLIC_FILE_STORE', "True")), True)
 VERSION = "5.2.5[Beta]"
 
+#IMDB
+TMD_API_KEY = "914840c590bcdda83b2c00e76519a90a"
+TMD_API_BASE = "https://api.themoviedb.org/3"
+IMG_BASE_URL = "https://image.tmdb.org/t/p/w500"
+
 
 LOG_STR = "Current Cusomized Configurations are:-\n"
 LOG_STR += ("IMDB Results are enabled, Bot will be showing imdb details for you queries.\n" if IMDB else "IMBD Results are disabled.\n")
