@@ -1,15 +1,14 @@
 ![Typing SVG](https://readme-typing-svg.herokuapp.com/?lines=WELCOME+TO+MY+DOMAIN!;MY+NAME+IS+EREN+YEAGER;I'M+A+POWERFUL+MOVIE+BOT;WITH+ULTRA+FEATURES!)
-
 <p align="center">
   <img src="https://telegra.ph/file/7226c9d57dc698158bab2.jpg" alt="Eren Yeager Logo">
 </p>
 
 # 𝙴𝚁𝙴𝙽 𝚈𝙴𝙰𝙶𝙴𝚁 ADV5.2.0
 
-[![Stars](https://img.shields.io/github/stars/LordSA/Eren-Yeager_ADV5.2.0?style=flat-square&color=yellow)](https://github.com/LordSA/Eren-Yeager_ADV5.2.0/stargazers)  
-[![Forks](https://img.shields.io/github/forks/LordSA/Eren-Yeager_ADV5.2.0?style=flat-square&color=orange)](https://github.com/LordSA/Eren-Yeager_ADV5.2.0/fork)  
-[![Size](https://img.shields.io/github/repo-size/LordSA/Eren-Yeager_ADV5.2.0?style=flat-square&color=green)](https://github.com/LordSA/Eren-Yeager_ADV5.2.0/)  
-[![Contributors](https://img.shields.io/github/contributors/LordSA/Eren-Yeager_ADV5.2.0?style=flat-square&color=green)](https://github.com/LordSA/Eren-Yeager_ADV5.2.0/graphs/contributors)  
+[![Stars](https://img.shields.io/github/stars/LordSA/Eren-Yeager-ADV?style=flat-square&color=yellow)](https://github.com/LordSA/Eren-Yeager-ADV/stargazers)  
+[![Forks](https://img.shields.io/github/forks/LordSA/Eren-Yeager-ADV?style=flat-square&color=orange)](https://github.com/LordSA/Eren-Yeager-ADV/fork)  
+[![Size](https://img.shields.io/github/repo-size/LordSA/Eren-Yeager-ADV?style=flat-square&color=green)](https://github.com/LordSA/Eren-Yeager-ADV/)  
+[![Contributors](https://img.shields.io/github/contributors/LordSA/Eren-Yeager-ADV?style=flat-square&color=green)](https://github.com/LordSA/Eren-Yeager-ADV/graphs/contributors)  
 [![License](https://img.shields.io/badge/License-AGPLv3-blue)](https://www.gnu.org/licenses/agpl-3.0.en.html)  
 
 ---
