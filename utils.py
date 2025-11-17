@@ -12,7 +12,7 @@ from info import AUTH_CHANNEL, LONG_IMDB_DESCRIPTION, MAX_LIST_ELM, TMD_API_KEY,
 from pyrogram.types import Message, InlineKeyboardButton, Audio, Document, Photo, Sticker, Video, VideoNote, Voice, Animation
 from pyrogram import enums
 from typing import List, Union, Optional, Dict, Any
-from database.users_chats_db import db
+#from database.users_chats_db import db
 from bs4 import BeautifulSoup
 
 
@@ -205,6 +205,7 @@ async def get_settings(group_id):
     This function is already perfect!
     It correctly uses the async db object.
     """
+    from database.users_chats_db import db
     try:
         group_id = int(group_id)
     except ValueError:
