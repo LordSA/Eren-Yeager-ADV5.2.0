@@ -1,7 +1,6 @@
 import motor.motor_asyncio
 from info import DATABASE_NAME, DATABASE_URI, DEFAULT_SETTINGS ##MELCOW_NEW_USERS, P_TTI_SHOW_OFF, SINGLE_BUTTON, SPELL_CHECK_REPLY, PROTECT_CONTENT
 from typing import List, Tuple, Dict, Optional
-from utils import temp
 class Database:
     def __init__(self, uri: str, database_name: str):
         self._client = motor.motor_asyncio.AsyncIOMotorClient(uri)
@@ -83,13 +82,7 @@ class Database:
         )
 
     async def update_settings(self, chat_id: int, settings: Dict):
-        updates = {f"settings.{key}": value for key, value in settings.items()}
-        await self.col_groups.update_one({"id": int(chat_id)}, {"$set": updates}, upsert=True)
-        if int(chat_id) in temp.SETTINGS:
-            try:
-                del temp.SETTINGS[int(chat_id)]
-            except Exception as e:
-                print(f"Error deleting settings cache: {e}")
+        await self.col_groups.update_one({"id": int(chat_id)}, {"$set": {"settings": settings}}, upsert=True)
 
     async def get_settings(self, chat_id: int) -> Optional[Dict]:
         settings = DEFAULT_SETTINGS.copy()
