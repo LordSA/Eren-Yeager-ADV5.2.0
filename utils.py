@@ -11,11 +11,10 @@ from cachetools import TTLCache
 from pyrogram.errors import InputUserDeactivated, UserNotParticipant, FloodWait, UserIsBlocked, PeerIdInvalid
 from info import AUTH_CHANNEL, LONG_IMDB_DESCRIPTION, MAX_LIST_ELM
 from imdb import IMDb
-from pyrogram.types import Message, InlineKeyboardButton
+from pyrogram.types import Message, InlineKeyboardButton, Audio, Document, Photo, Sticker, Video, VideoNote, Voice, Animation
 from pyrogram import enums
-from typing import Union
 from datetime import datetime
-from typing import List
+from typing import List, Union, Optional
 from database.users_chats_db import db
 from bs4 import BeautifulSoup
 
@@ -246,22 +245,30 @@ def split_list(l, n):
     for i in range(0, len(l), n):
         yield l[i:i + n]   
 
-def get_file_id(msg: Message):
-    if msg.media:
-        for message_type in (
-            "photo",
-            "animation",
-            "audio",
-            "document",
-            "video",
-            "video_note",
-            "voice",
-            "sticker"
-        ):
-            obj = getattr(msg, message_type)
-            if obj:
-                setattr(obj, "message_type", message_type)
-                return obj
+MediaType = Union[
+    "Audio", "Document", "Photo",
+    "Sticker", "Video", "VideoNote",
+    "Voice", "Animation"
+]
+
+def get_file_id(msg: Message) -> Optional[MediaType]:
+    if not msg.media:
+        return None 
+    media_with_files = {
+        enums.MessageMediaType.PHOTO,
+        enums.MessageMediaType.ANIMATION,
+        enums.MessageMediaType.AUDIO,
+        enums.MessageMediaType.DOCUMENT,
+        enums.MessageMediaType.VIDEO,
+        enums.MessageMediaType.VIDEO_NOTE,
+        enums.MessageMediaType.VOICE,
+        enums.MessageMediaType.STICKER
+    }
+
+    if msg.media in media_with_files:
+        return getattr(msg, msg.media.value)
+    
+    return None 
 
 def extract_user(message: Message) -> Union[int, str]:
     """extracts the user from a message"""
