@@ -24,31 +24,34 @@ async def showid(client, message):
             quote=True
         )
 
-    elif chat_type in [enums.ChatType.GROUP, enums.ChatType.SUPERGROUP]:
+    elif chat_type in [enums.ChatType.GROUP, enums.ChatType.SUPERGROUP, enums.ChatType.CHANNEL]:
         _id = ""
         _id += (
             "<b>➲ Chat ID</b>: "
             f"<code>{message.chat.id}</code>\n"
         )
-        if message.reply_to_message:
-            _id += (
-                "<b>➲ User ID</b>: "
-                f"<code>{message.from_user.id if message.from_user else 'Anonymous'}</code>\n"
-                "<b>➲ Replied User ID</b>: "
-                f"<code>{message.reply_to_message.from_user.id if message.reply_to_message.from_user else 'Anonymous'}</code>\n"
-            )
-            file_info = get_file_id(message.reply_to_message)
+        
+        replied_msg = message.reply_to_message
+
+        if replied_msg:
+            if replied_msg.forward_from_chat:
+                _id += f"<b>➲ Forwarded Channel ID</b>: <code>{replied_msg.forward_from_chat.id}</code>\n"
+            elif replied_msg.forward_from:
+                _id += f"<b>➲ Forwarded User ID</b>: <code>{replied_msg.forward_from.id}</code>\n"
+            
+            else:
+                _id += (
+                    "<b>➲ User ID</b>: "
+                    f"<code>{message.from_user.id if message.from_user else 'Anonymous'}</code>\n"
+                    "<b>➲ Replied User ID</b>: "
+                    f"<code>{replied_msg.from_user.id if replied_msg.from_user else 'Anonymous'}</code>\n"
+                )
         else:
             _id += (
                 "<b>➲ User ID</b>: "
                 f"<code>{message.from_user.id if message.from_user else 'Anonymous'}</code>\n"
             )
-            file_info = get_file_id(message)
-        if file_info:
-            _id += (
-                f"<b>{file_info.message_type}</b>: "
-                f"<code>{file_info.file_id}</code>\n"
-            )
+        
         await message.reply_text(
             _id,
             quote=True
