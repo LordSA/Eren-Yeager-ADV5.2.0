@@ -28,7 +28,7 @@ BTN_URL_REGEX = re.compile(
     r"(\[([^\[]+?)\]\((buttonurl|buttonalert):(?:/{0,2})(.+?)(:same)?\))"
 )
 
-imdb = IMDb()
+#imdb = IMDb()
 AIO_SESSION = None
 BANNED = {}
 SMART_OPEN = '“'
@@ -84,7 +84,7 @@ def get_crew(crew_list: List[Dict[str, Any]], job: str) -> List[Dict[str, Any]]:
     return [member for member in crew_list if member.get("job") == job]
 
 async def get_poster(query: str, bulk: bool = False, id: bool = False, file: Optional[str] = None) -> Optional[List[Dict[str, Any]]]:
-    if TMD_API_KEY == "914840c590bcdda83b2c00e76519a90a":
+    if TMD_API_KEY == "BLAH BLAH":
         logger.error("TMDb API key is not set! 'get_poster' will not work.")
         return None
 
