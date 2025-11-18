@@ -469,12 +469,13 @@ async def settings(client, message, grp_id, title):
 @Client.on_message(filters.command('set_template'))
 @check_group_admin
 async def save_template(client, message, grp_id, title):
-    sts = await message.reply("Checking template")
-    
+    sts = await message.reply("Checking template...")
     if len(message.command) < 2:
-        return await sts.edit("No Input!!")
-        
+        return await sts.edit("❌ **Error:** Please provide a template text.\n\nUsage: `/set_template [your HTML template]`")
     template = message.text.split(" ", 1)[1]
-    
+    if template.lower().strip() == "default":
+        from info import IMDB_TEMPLATE
+        await save_group_settings(grp_id, 'template', IMDB_TEMPLATE)
+        return await sts.edit(f"Successfully **RESET** template for {title} to default!")
     await save_group_settings(grp_id, 'template', template)
-    await sts.edit(f"Successfully changed template for {title} to\n\n{template}")
+    await sts.edit(f"Successfully changed template for {title} to:\n\n{template}")
