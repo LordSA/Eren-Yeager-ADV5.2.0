@@ -1316,6 +1316,7 @@ async def auto_filter(client, msg, spoll=False):
         
         template_vars = {
             'query': search,
+            'message': message,
             'title': 'N/A', 'votes': 'N/A', 'aka': 'N/A', 'seasons': 'N/A',
             'box_office': 'N/A', 'localized_title': 'N/A', 'kind': 'N/A',
             'imdb_id': 'N/A', 'cast': 'N/A', 'runtime': 'N/A', 'countries': 'N/A',
