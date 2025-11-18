@@ -55,10 +55,12 @@ class Database:
 
     # -------------------- Group Helpers --------------------
     def _new_group(self, group_id: int, title: str) -> Dict:
+        settings = DEFAULT_SETTINGS.copy()
         return {
             "id": group_id,
             "title": title,
             "chat_status": {"is_disabled": False, "reason": ""},
+            "settings": settings
         }
 
     async def add_chat(self, chat_id: int, title: str):

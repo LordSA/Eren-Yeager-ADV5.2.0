@@ -1312,10 +1312,11 @@ async def auto_filter(client, msg, spoll=False):
         
         if not TEMPLATE:
             print("[DEBUG] auto_filter: No template found in settings! Using default.")
-            TEMPLATE = "Here is what i found for your query {query}"
+            TEMPLATE = IMDB_TEMPLATE
         
         template_vars = {
             'query': search,
+            'message': message,
             'title': 'N/A', 'votes': 'N/A', 'aka': 'N/A', 'seasons': 'N/A',
             'box_office': 'N/A', 'localized_title': 'N/A', 'kind': 'N/A',
             'imdb_id': 'N/A', 'cast': 'N/A', 'runtime': 'N/A', 'countries': 'N/A',
