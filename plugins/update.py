@@ -3,7 +3,7 @@ import sys
 import asyncio
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
-from info import ADMINS, PM2_BOT_NAME
+from info import ADMINS, PM2_BOT_NAME, LOG_CHANNEL
 
 async def run_shell_command(command):
     process = await asyncio.create_subprocess_shell(
@@ -13,19 +13,30 @@ async def run_shell_command(command):
     )
     stdout, stderr = await process.communicate()
     return stdout.decode().strip(), stderr.decode().strip()
+
 async def get_active_branch():
     branch, _ = await run_shell_command("git rev-parse --abbrev-ref HEAD")
     return branch
-async def apply_update(message_object, branch):
+
+async def apply_update(message_object, branch, client):
     await message_object.edit(f"🚀 **Update Started on branch `{branch}`...**\n\n1️⃣ Resetting Git...")
+    log_text = f"🚀 **Update Started on branch `{branch}`**\n\n"
     await run_shell_command(f"git fetch origin {branch}")
     update_cmd = f"git reset --hard origin/{branch}"
     stdout, stderr = await run_shell_command(update_cmd)
+    log_text += f"**Git Reset:**\n`{stdout}`\n"
+    if stderr: log_text += f"`{stderr}`\n"
     if stderr and "error" in stderr.lower():
         return await message_object.edit(f"❌ **Git Reset Failed!**\n\n`{stderr}`")
     await message_object.edit("2️⃣ **Installing Dependencies...**")
     pip_cmd = f"{sys.executable} -m pip install -r requirements.txt"
-    await run_shell_command(pip_cmd)
+    stdout_pip, stderr_pip = await run_shell_command(pip_cmd)
+    log_text += f"\n**Pip Install:**\n`{stdout_pip}`\n"
+    if LOG_CHANNEL:
+        try:
+            await client.send_message(int(LOG_CHANNEL), log_text[:4000])
+        except Exception as e:
+            print(f"Error sending log: {e}")
     await message_object.edit("3️⃣ **Restarting Bot...**\n(Expect 10-20s downtime)")
     if PM2_BOT_NAME:
         await asyncio.sleep(1)
@@ -43,7 +54,7 @@ async def check_update_handler(client: Client, message: Message):
         if not branch:
             return await sts.edit("❌ Failed to detect git branch.")
         await run_shell_command(f"git fetch origin {branch}")
-        commits_log, _ = await run_shell_command(f"git log HEAD..origin/{branch} --pretty=format:'● %s (%cr)'")
+        commits_log, _ = await run_shell_command(f"git log HEAD..origin/{branch} --pretty=format:'● %s (%cr)'")        
         if not commits_log:
             return await sts.edit(f"✅ **Bot is up-to-date.**\n\n**Branch:** `{branch}`")
         commit_list = commits_log.split("\n")
@@ -56,6 +67,11 @@ async def check_update_handler(client: Client, message: Message):
             f"**New Commits:** `{len(commit_list)}`\n\n"
             f"**📝 Changelog:**\n{changes}"
         )
+        if LOG_CHANNEL:
+            try:
+                await client.send_message(int(LOG_CHANNEL), text)
+            except Exception as e:
+                print(f"Error sending log: {e}")
         btn = InlineKeyboardMarkup([[InlineKeyboardButton("🚀 Apply Update Now", callback_data="do_update")]])
         await sts.edit(text, reply_markup=btn)
     except Exception as e:
@@ -65,12 +81,12 @@ async def check_update_handler(client: Client, message: Message):
 async def update_handler(client: Client, message: Message):
     if not os.path.isdir(".git"):
         return await message.reply_text("❌ **Error:** Not a Git Repository.")
-    sts = await message.reply_text("🔄 **Initializing Update...**")    
+    sts = await message.reply_text("🔄 **Initializing Update...**")
     try:
         branch = await get_active_branch()
         if not branch:
             return await sts.edit("❌ Failed to detect git branch.")
-        await apply_update(sts, branch)
+        await apply_update(sts, branch, client)
     except Exception as e:
         await sts.edit(f"❌ **Error:**\n`{str(e)}`")
 
@@ -78,4 +94,4 @@ async def update_handler(client: Client, message: Message):
 async def update_button_callback(client, query):
     await query.answer("Starting Update...", show_alert=True)
     branch = await get_active_branch()
-    await apply_update(query.message, branch)
+    await apply_update(query.message, branch, client)
