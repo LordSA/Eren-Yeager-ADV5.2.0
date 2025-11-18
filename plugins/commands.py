@@ -15,7 +15,7 @@ from pyrogram.errors import ChatAdminRequired, FloodWait
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 from database.ia_filterdb import Media, get_file_details
 from database.users_chats_db import db
-from info import CHANNELS, ADMINS, AUTH_CHANNEL, LOG_CHANNEL, BATCH_FILE_CAPTION, CUSTOM_FILE_CAPTION, PROTECT_CONTENT, CHPV
+from info import CHANNELS, ADMINS, AUTH_CHANNEL, LOG_CHANNEL, BATCH_FILE_CAPTION, CUSTOM_FILE_CAPTION, PROTECT_CONTENT, CHPV, IMDB_TEMPLATE
 from utils import get_settings, get_size, is_subscribed, save_group_settings, temp, FILE_ID_CACHE
 from database.connections_mdb import active_connection
 from plugins.Tools.help_func.decorators import check_group_admin
@@ -474,8 +474,14 @@ async def save_template(client, message, grp_id, title):
         return await sts.edit("❌ **Error:** Please provide a template text.\n\nUsage: `/set_template [your HTML template]`")
     template = message.text.split(" ", 1)[1]
     if template.lower().strip() == "default":
-        from info import IMDB_TEMPLATE
         await save_group_settings(grp_id, 'template', IMDB_TEMPLATE)
         return await sts.edit(f"Successfully **RESET** template for {title} to default!")
     await save_group_settings(grp_id, 'template', template)
     await sts.edit(f"Successfully changed template for {title} to:\n\n{template}")
+
+@Client.on_message(filters.command('delete_template'))
+@check_group_admin
+async def delete_template_check(client, message, grp_id, title):
+      sts = await message.reply("Restoring default template...")
+      await save_group_settings(grp_id, 'template', IMDB_TEMPLATE)
+      await sts.edit(f"✅ **Success!**\n\nThe template for **{title}** has been removed and reset to the bot's default.")
