@@ -90,7 +90,7 @@ async def update_handler(client: Client, message: Message):
     except Exception as e:
         await sts.edit(f"❌ **Error:**\n`{str(e)}`")
 
-@Client.on_callback_query(filters.regex("^do_update$") & filters.user(ADMINS))
+@Client.on_callback_query(filters.regex("^do_update$") & filters.user(ADMINS), group=-1)
 async def update_button_callback(client, query):
     await query.answer("Starting Update...", show_alert=True)
     branch = await get_active_branch()
