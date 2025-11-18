@@ -2,7 +2,7 @@ import os
 from pyrogram import Client, filters, enums
 from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant, MediaEmpty, PhotoInvalidDimensions, WebpageMediaEmpty
 from info import IMDB_TEMPLATE
-from utils import extract_user, get_file_id, get_poster, last_online
+from utils import extract_user, get_poster
 from datetime import datetime
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 import logging
@@ -58,7 +58,6 @@ async def showid(client, message):
 
 @Client.on_message(filters.command(["info"]))
 async def who_is(client, message):
-    # https://github.com/SpEcHiDe/PyroGramBot/blob/master/pyrobot/plugins/admemes/whois.py#L19
     status_message = await message.reply_text(
         "`Fetching user info...`"
     )
@@ -164,7 +163,7 @@ async def imdb_callback(bot: Client, quer_y: CallbackQuery):
         await quer_y.message.edit("Error: Could not find details for that movie.")
         await quer_y.answer("Movie not found", show_alert=True)
         return
-
+    
     template_vars = {
         "query": imdb.get('title', 'N/A'),
         "title": imdb.get('title', 'N/A'),
@@ -193,10 +192,15 @@ async def imdb_callback(bot: Client, quer_y: CallbackQuery):
         "poster": imdb.get('poster', None),
         "plot": imdb.get('plot', 'N/A'),
         "rating": imdb.get('rating', 'N/A'),
-        "url": imdb.get('url', '#')
+        "url": imdb.get('url', '#'),
+        "message": quer_y.message,             
+        "requestor": quer_y.from_user.mention  
     }
 
-    caption = IMDB_TEMPLATE.format(**template_vars)
+    try:
+        caption = IMDB_TEMPLATE.format(**template_vars)
+    except KeyError:
+        caption = f"**{template_vars['title']}**\n\nRating: {template_vars['rating']}/10\n[IMDb Link]({template_vars['url']})"
 
     btn = [
         [InlineKeyboardButton(
@@ -207,7 +211,6 @@ async def imdb_callback(bot: Client, quer_y: CallbackQuery):
     reply_markup = InlineKeyboardMarkup(btn)
 
     poster = imdb.get('poster')
-    
     if poster:
         try:
             await quer_y.message.reply_photo(
@@ -216,22 +219,7 @@ async def imdb_callback(bot: Client, quer_y: CallbackQuery):
                 reply_markup=reply_markup
             )
             await quer_y.message.delete()
-        
-        except (MediaEmpty, PhotoInvalidDimensions, WebpageMediaEmpty):
-            try:
-                pic = poster.replace('.jpg', "._V1_UX360.jpg")
-                await quer_y.message.reply_photo(
-                    photo=pic,
-                    caption=caption,
-                    reply_markup=reply_markup
-                )
-                await quer_y.message.delete()
-            except Exception as e:
-                logger.warning(f"IMDb photo failed twice: {e}")
-                await quer_y.message.edit(caption, reply_markup=reply_markup, disable_web_page_preview=False)
-        
-        except Exception as e:
-            logger.exception(e)
+        except Exception:
             await quer_y.message.edit(caption, reply_markup=reply_markup, disable_web_page_preview=False)
     else:
         await quer_y.message.edit(caption, reply_markup=reply_markup, disable_web_page_preview=False)
