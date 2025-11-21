@@ -41,6 +41,7 @@ py-tgcalls==2.2.8
 
 # YouTube / Media
 yt-dlp
+static-ffmpeg
 youtube-dl
 youtube_search
 youtube-search-python==1.4.6
