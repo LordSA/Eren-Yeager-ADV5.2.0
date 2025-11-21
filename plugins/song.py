@@ -3,6 +3,8 @@ import uuid
 import asyncio
 import logging
 import yt_dlp
+import static_ffmpeg
+static_ffmpeg.add_paths()
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 
