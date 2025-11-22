@@ -42,11 +42,16 @@ async def install_plugin_handler(client: Client, message: Message):
         )
 
     url = message.command[1]
+
+    if "gist.github.com" in url and "raw" not in url:
+        url = url.rstrip("/") + "/raw"
     
     if len(message.command) >= 3:
         filename = message.command[2]
     else:
         filename = url.split("/")[-1]
+        if not filename.endswith(".py"):
+            filename = "gist_plugin.py"
 
     if not filename.endswith(".py"):
         filename += ".py"
