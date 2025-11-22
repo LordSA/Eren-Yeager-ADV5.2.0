@@ -38,23 +38,13 @@ async def list_plugins_handler(client: Client, message: Message):
 async def install_plugin_handler(client: Client, message: Message):
     if len(message.command) < 2:
         return await message.reply_text(
-            "❌ **Usage:** `/install [Raw Gist Link] [FileName.py]`"
+            "❌ **Usage:** `/install [Gist Link] [Optional Name]`"
         )
 
     url = message.command[1]
 
     if "gist.github.com" in url and "raw" not in url:
         url = url.rstrip("/") + "/raw"
-    
-    if len(message.command) >= 3:
-        filename = message.command[2]
-    else:
-        filename = url.split("/")[-1]
-        if not filename.endswith(".py"):
-            filename = "gist_plugin.py"
-
-    if not filename.endswith(".py"):
-        filename += ".py"
 
     sts = await message.reply_text("📥 **Fetching plugin...**")
 
@@ -63,14 +53,24 @@ async def install_plugin_handler(client: Client, message: Message):
             async with session.get(url) as response:
                 if response.status != 200:
                     return await sts.edit("❌ **Error:** Could not download file. Check link.")
+                
                 code = await response.text()
+                final_url = str(response.url)
+                
+                if len(message.command) >= 3:
+                    filename = message.command[2]
+                else:
+                    filename = final_url.split("/")[-1]
+
+        if not filename.endswith(".py"):
+            filename += ".py"
 
         try:
             ast.parse(code)
         except SyntaxError as e:
             return await sts.edit(
                 f"❌ **Syntax Error Detected!**\n\n"
-                f"Plugin **REJECTED** to prevent crash.\n"
+                f"Plugin **REJECTED**.\n"
                 f"**Line {e.lineno}:** `{e.text.strip() if e.text else 'Unknown'}`\n"
                 f"**Error:** `{e.msg}`"
             )
